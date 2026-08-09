@@ -5,6 +5,7 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 import json
 import time
+from pubmed_mining import PubMedClient, PubMedQueryError, PubMedRequestError
 
 
 load_dotenv()
@@ -28,6 +29,7 @@ CORS(app)
 
 
 tcm_app_instance = None
+pubmed_client = PubMedClient()
 
 if TCM_RAG_APP_LOADED:
     csv_path = os.getenv("TCM_CSV_PATH", r"tcm_KG.csv") 
@@ -159,6 +161,20 @@ def handle_chat_api():
             'Connection': 'keep-alive'
         }
     )
+
+
+@app.route('/api/pubmed', methods=['GET'])
+def search_pubmed():
+    query = request.args.get('query', '')
+    max_results = request.args.get('max_results', default=20, type=int)
+
+    try:
+        return jsonify(pubmed_client.search(query, max_results=max_results))
+    except PubMedQueryError as error:
+        return jsonify({'error': str(error)}), 400
+    except PubMedRequestError as error:
+        logger.error('PubMed search failed: %s', error)
+        return jsonify({'error': 'PubMed is temporarily unavailable.'}), 502
     
 @app.route('/static/images/<filename>')
 def serve_image(filename):

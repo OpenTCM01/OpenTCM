@@ -1,5 +1,37 @@
 # OpenTCM
 
+## PubMed Literature Mining API
+
+OpenTCM includes a lightweight PubMed integration for retrieving literature and
+summarising the returned publication metadata. It uses the official NCBI
+E-utilities API and does not require a new Python dependency.
+
+Start the application, then request:
+
+```text
+GET /api/pubmed?query=acupuncture%20osteoarthritis&max_results=20
+```
+
+The response includes a list of records with PubMed links, DOI, authors,
+journal, publication date, and publication type. The `analytics` object
+aggregates the returned records by publication year, journal, and publication
+type for quick bibliometric exploration. `max_results` accepts values from 1
+to 100 and defaults to 20.
+
+For NCBI's recommended request identification and higher rate limits, set the
+following optional environment variables before starting the app:
+
+```text
+PUBMED_EMAIL=researcher@example.org
+NCBI_API_KEY=your_ncbi_api_key
+```
+
+Set `PUBMED_EMAIL` in deployed instances so NCBI can identify the application
+owner. Without an API key, NCBI limits E-utilities clients to three requests per
+second; an API key raises the default limit to ten requests per second. See the
+[NCBI E-utilities usage guidelines](https://www.ncbi.nlm.nih.gov/books/NBK25497/)
+before operating the endpoint at scale.
+
 OpenTCM is a web application designed for intelligent question answering in Traditional Chinese Medicine (TCM). Built upon a knowledge graph and a Large Language Model (LLM, using Kimi as an example), OpenTCM combines structured TCM knowledge with the understanding and generation capabilities of LLMs. This enables the system to provide users with well-sourced, comprehensive, and easy-to-understand TCM information. The project supports streaming responses to enhance user interaction.
 
 Our paper, *"OpenTCM: A GraphRAG-Empowered LLM-based System for Traditional Chinese Medicine Knowledge Retrieval and Diagnosis"*, was accepted by BIGCOM25 and received the Best Paper Award 🏆.
