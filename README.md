@@ -79,6 +79,12 @@ Jinglin He, Yunqi Guo, Lai Kwan Lam, Waikei Leung, Lixing He, Yuanan Jiang, Chi 
 
 The paper describes the original research system using **68 gynecological books**, more than **48,000 entities**, and **152,000 relationships**. The current web application adds paragraph-level indexing, modern-literature retrieval, multilingual interaction, and conversation management. These later features are not presented as evaluations from the 2025 paper.
 
+### 🧭 Paper Overview
+
+<a href="https://arxiv.org/html/2504.20118v4#S2.F1"><img src="docs/images/opentcm-paper-overview.png" alt="OpenTCM paper overview: data collection and preprocessing, TCM knowledge graph construction, GraphRAG, and real-world application evaluation" width="100%" /></a>
+
+*Overview of the paper's original OpenTCM system, from [Fig. 1 in the public paper](https://arxiv.org/html/2504.20118v4#S2.F1). The current web app's additional features are described separately above.*
+
 For the original application code, see the [paper-era repository snapshot](https://github.com/OpenTCM01/OpenTCM/tree/fbba8f7315b61a9b8e9bab8890686d338d3cd8e0). The legacy `data/TCMKG.py` extraction script is retained for reference; it additionally requires the `openai` package and its own permitted source texts.
 
 ### 📰 In the News
@@ -106,10 +112,6 @@ The article discusses AI in TCM and mentions OpenTCM's use of classical-book con
 </details>
 
 ## 🏗️ How It Works
-
-![OpenTCM workflow: question and conversation context, intent analysis, classical and modern retrieval, ranked evidence, sourced answers, streaming chat, and conversation history](docs/images/opentcm-workflow.png)
-
-[Editable diagram source](docs/diagrams/opentcm-workflow.mmd)
 
 **Flask** serves the app and streams results with server-sent events. **SQLite FTS5** provides an on-disk full-text search index: it finds relevant indexed terms without repeatedly scanning the entire JSONL corpus. Graph relations support chained retrieval; **DeepSeek** provides query analysis and answer generation through a configurable API endpoint/model.
 
