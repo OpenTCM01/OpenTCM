@@ -183,13 +183,13 @@ python app.py
 
 Open **http://127.0.0.1:8000/** and enter the password you configured. Choose a language, select Standard or Deep Reasoning, and start a conversation. A missing classical index leaves the retrieval service unavailable until the index is supplied.
 
-## ☁️ Deployment and Privacy
+## 🔒 Local Setup and Privacy
 
-For a public installation, run the app with a production WSGI server and HTTPS. A Cloudflare Tunnel can connect your origin to a domain without publishing local network credentials. [Deployment instructions](docs/DEPLOYMENT.md) include a generic configuration example.
+This repository documents **local deployment only**. The public app starts on `127.0.0.1:8000`, accessible from the same computer. Follow the [local setup guide](docs/DEPLOYMENT.md) for installation, configuration, data preparation, and verification. A GPU is not required when generation uses your configured LLM API.
 
-This release contains application source, guides, documentation, and approved UI assets. `.gitignore` excludes environment files, credentials, databases, raw data, conversation history, logs, local tunnel configuration, and unpublished research. Do not commit those files or screenshots containing private conversations.
+This release contains application source, guides, documentation, and approved UI assets. `.gitignore` excludes environment files, credentials, databases, raw data, conversation history, logs, machine-specific configuration, and unpublished research. Do not commit those files or screenshots containing private conversations.
 
-The current password-gated app uses a **shared conversation store**, not separate user accounts. Deploy it for a trusted group; add per-user authentication and history isolation before a wider multi-user rollout.
+The current password-gated app uses a **shared conversation store**, not separate user accounts. Anyone using one local installation shares its history. Keep credentials and consultation records private, and use only non-sensitive questions when preparing public screenshots or issue reports.
 
 ## 🗃️ Repository Map
 
@@ -215,7 +215,7 @@ Use [GitHub Issues](https://github.com/OpenTCM01/OpenTCM/issues) for reproducibl
 OpenTCM 是基于知识图谱与大语言模型的中医智能问答平台，支持古籍原文、现代文献、链式检索、可点击出处、连续追问，以及简体、繁体和英文切换。
 
 - 🌐 **使用网页版：** [open-tcm.com](https://open-tcm.com/)，专家测试访问凭证需单独获取。
-- 🛠️ **本地运行：** 安装依赖，复制 `.env.example` 为 `.env`，设置自己的 API Key、登录密码和会话密钥，准备知识库后运行 `python app.py`。
+- 🛠️ **本地运行：** 安装依赖，复制 `.env.example` 为 `.env`，设置自己的 API Key、登录密码和会话密钥，准备知识库后运行 `python app.py`，在本机打开 `http://127.0.0.1:8000/`。参见[本地部署指南](docs/DEPLOYMENT.md)，公开仓库仅提供本地运行说明。
 - 📚 **数据说明：** 完整古籍库、文献 PDF、检索数据库和专家对话记录不随本次公开代码更新上传。
 - 📄 **研究成果：** [arXiv 论文](https://arxiv.org/abs/2504.20118)；[Rest of World 报道](https://restofworld.org/2026/traditional-chinese-medicine-ai-china/)。
 

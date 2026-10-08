@@ -1,63 +1,86 @@
-# Deploying OpenTCM
+# Local OpenTCM Setup
 
-## Configure the origin
+This guide covers running OpenTCM on your own computer. The public app listens on `127.0.0.1` only. The website link in the README is a project demonstration, not an installation requirement.
 
-Install the runtime dependencies, prepare an authorized classical index, and set a local `.env` using `.env.example`. Set unique values for `OPENTCM_PASSWORD` and `FLASK_SECRET_KEY`, and provide your own API key. Do not publish that file.
+## 1. Install dependencies
 
-For local development:
+Use Python 3.10 or newer with SQLite FTS5 support. From the repository root:
+
+```bash
+python -m venv .venv
+```
+
+Activate the virtual environment and create your local configuration:
+
+```powershell
+# Windows PowerShell
+.\.venv\Scripts\Activate.ps1
+Copy-Item .env.example .env
+```
+
+```bash
+# macOS / Linux
+source .venv/bin/activate
+cp .env.example .env
+```
+
+Then install the dependencies:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+## 2. Configure your local instance
+
+Edit your local `.env` and replace the placeholder values for `DEEPSEEK_API_KEY`, `OPENTCM_PASSWORD`, and `FLASK_SECRET_KEY`. Generate a random session secret with:
+
+```bash
+python -c "import secrets; print(secrets.token_hex(32))"
+```
+
+Use your own API key and a model available to your account. The supplied API settings select the LLM service, not where your website runs. Model generation requires internet access; retrieval and conversation storage use local SQLite databases. A GPU is not required for API-based generation.
+
+Never publish `.env`, real passwords, keys, or consultation histories. Keep the default `PORT=8000`, or set an unused port if another application occupies it.
+
+## 3. Prepare the local indexes
+
+Follow [data preparation](DATA_PREPARATION.md) to build an authorized classical KG index and, optionally, a modern-literature index. You can also configure paths to existing authorized databases:
+
+```dotenv
+OPENTCM_KG_DB=data/opentcm_kg.sqlite
+OPENTCM_MODERN_DB=data/opentcm_modern.sqlite
+OPENTCM_CONVERSATION_DB=data/opentcm_conversations.sqlite
+```
+
+The full corpora and databases are not included in the public repository. The classical index is required for the retrieval service to initialize. Allow enough disk space for the source data, generated indexes, and conversations; a large paragraph KG can occupy several gigabytes.
+
+## 4. Start and open OpenTCM
+
+From the repository root, with the virtual environment active:
 
 ```bash
 python app.py
 ```
 
-For an always-on installation, use a production WSGI server. Waitress works on Windows and Linux:
+Open **http://127.0.0.1:8000/** in a browser on the same computer, then enter the password you configured. If you changed `PORT`, use that port in the URL instead.
 
-```bash
-python -m pip install waitress
-waitress-serve --listen=127.0.0.1:8000 app:app
-```
+Keep the terminal running while using the app. Press `Ctrl+C` to stop it. Closing the process, sleeping, or shutting down the computer stops the local service; start `python app.py` again after returning.
 
-Use an always-on host with enough disk space for your indexes. The original paragraph KG database can occupy several gigabytes; source data and generated archives take additional space. A GPU is not required when generation uses a remote LLM API.
+## 5. Verify local operation
 
-## Connect a domain with Cloudflare Tunnel
+1. Confirm that unauthenticated requests redirect to login or receive an authentication error.
+2. Log in and open the welcome and chat pages.
+3. Ask a non-sensitive demonstration question and inspect the answer and a citation popover.
+4. Check the three languages, Standard/Deep Reasoning modes, a follow-up, and history restoration.
+5. Refresh the page and confirm that the saved conversation remains available locally.
 
-Install `cloudflared` following the [official installation guide](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/downloads/). Create a named tunnel in your own Cloudflare account and route your domain to it. Keep the tunnel credential JSON, account certificate, and token outside the public repository.
+## Conversation privacy
 
-An example local configuration is:
+The password-gated app uses one shared SQLite conversation store, not separate user accounts. Anyone using the same local installation can access its saved histories. Keep backups private and remove patient details from questions, screenshots, and issue reports.
 
-```yaml
-tunnel: YOUR-TUNNEL-ID
-credentials-file: /private/path/to/YOUR-TUNNEL-ID.json
-ingress:
-  - hostname: your-domain.example
-    service: http://127.0.0.1:8000
-  - service: http_status:404
-```
+## Troubleshooting
 
-Run your named tunnel using your private configuration:
-
-```bash
-cloudflared tunnel --config /private/path/to/config.yml run
-```
-
-For a temporary test URL:
-
-```bash
-cloudflared tunnel --url http://127.0.0.1:8000
-```
-
-The origin server and tunnel must both remain running. A laptop that sleeps, shuts down, or loses connectivity stops serving the site. Configure process supervision and restart on your hosting platform for an always-on deployment.
-
-## Conversation data
-
-The password gate provides access to a shared application. All users admitted to one installation share its SQLite conversation store. This release does not provide separate accounts or per-user history isolation.
-
-Restrict a shared installation to a trusted group. Keep database backups private, and do not upload real consultation histories to issue reports, screenshots, or GitHub. For wider public use, first add individual authentication, isolated histories, quotas, and appropriate retention controls.
-
-## Verify an installation
-
-1. Confirm that unauthenticated requests are redirected to login or receive an authentication error.
-2. Log in with your configured password and open the welcome and chat pages.
-3. Ask a non-sensitive demonstration question; inspect both the answer and a citation popover.
-4. Verify language switching, Standard/Deep Reasoning, a follow-up, and history restoration.
-5. Repeat the login and page-access checks through the public HTTPS domain.
+- **A configuration error at startup:** replace all required credential placeholders in `.env` and run the command from the repository root.
+- **Retrieval is unavailable:** prepare the classical database and check `OPENTCM_KG_DB`.
+- **The port is already in use:** set an unused `PORT` in `.env` and use the matching local URL.
+- **An API request fails:** check your API key, balance, selected model, and internet connection. Do not post your key in an issue report.

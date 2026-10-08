@@ -1,4 +1,6 @@
+import ast
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -7,6 +9,30 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+class LocalDeploymentTests(unittest.TestCase):
+    def test_local_entrypoint_uses_loopback(self):
+        tree = ast.parse((ROOT / "app.py").read_text(encoding="utf-8"))
+        calls = [node for node in ast.walk(tree) if isinstance(node, ast.Call)
+                 and isinstance(node.func, ast.Attribute) and node.func.attr == "run"
+                 and isinstance(node.func.value, ast.Name) and node.func.value.id == "app"]
+        self.assertEqual(len(calls), 1)
+        keywords = {keyword.arg: keyword.value for keyword in calls[0].keywords}
+        self.assertEqual(ast.literal_eval(keywords["host"]), "127.0.0.1")
+        self.assertFalse(ast.literal_eval(keywords["debug"]))
+
+    def test_setup_docs_are_local_only(self):
+        forbidden = re.compile(
+            r"cloudflare|cloudflared|tunnel|credentials-file|your-domain|"
+            r"waitress|gunicorn|nginx|reverse.proxy|public HTTPS domain", re.I,
+        )
+        for path in (ROOT / "README.md", *sorted((ROOT / "docs").glob("*.md"))):
+            with self.subTest(document=path.name):
+                self.assertIsNone(forbidden.search(path.read_text(encoding="utf-8")))
+        guide = (ROOT / "docs/DEPLOYMENT.md").read_text(encoding="utf-8")
+        self.assertIn("http://127.0.0.1:8000/", guide)
+        self.assertIn("python app.py", guide)
 
 
 class PublicAppTests(unittest.TestCase):

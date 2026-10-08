@@ -768,4 +768,4 @@ def serve_image(filename):
 
 if __name__ == "__main__":
     logger.info("启动 Flask 开发服务器...")
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "8000")), debug=False, threaded=True)
+    app.run(host="127.0.0.1", port=int(os.getenv("PORT", "8000")), debug=False, threaded=True)
