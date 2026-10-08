@@ -6,11 +6,13 @@
 
 **中医智能问答助手 · 古籍知识图谱 · 现代文献 · 可追溯证据**
 
+<p>
 <a href="https://open-tcm.com/"><img src="https://img.shields.io/badge/Web-open--tcm.com-164b3e?style=flat-square&logo=googlechrome&logoColor=white" alt="OpenTCM website" /></a>
 <a href="https://arxiv.org/abs/2504.20118"><img src="https://img.shields.io/badge/arXiv-2504.20118-b31b1b?style=flat-square&logo=arxiv&logoColor=white" alt="OpenTCM paper on arXiv" /></a>
 <a href="https://restofworld.org/2026/traditional-chinese-medicine-ai-china/"><img src="https://img.shields.io/badge/Press-Rest_of_World-315e8b?style=flat-square" alt="Rest of World coverage" /></a>
 <img src="https://img.shields.io/badge/Python-3.10%2B-3776ab?style=flat-square&logo=python&logoColor=white" alt="Python 3.10 or newer" />
 <img src="https://img.shields.io/badge/Retrieval-SQLite_FTS5-009688?style=flat-square&logo=sqlite&logoColor=white" alt="SQLite FTS5 retrieval" />
+</p>
 
 <br />
 
