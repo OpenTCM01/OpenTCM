@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <title>OpenTCM 中醫婦科痛證平台 操作指南</title>
+  
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; background: #f5f5f5; color: #333; padding: 20px; transition: background 0.3s, color 0.3s; }
+      body.dark { background: #1a1a2e; color: #e0e0e0; }
+      .toggle-bar { max-width: 800px; margin: 0 auto 12px auto; display: flex; justify-content: flex-end; }
+      .toggle-btn { background: #2d6a4f; color: white; border: none; border-radius: 20px; padding: 7px 18px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: 'Noto Sans TC', sans-serif; transition: background 0.2s; }
+      .toggle-btn:hover { background: #1b4332; }
+      body.dark .toggle-btn { background: #52b788; color: #1a1a2e; }
+      .page { background: white; max-width: 800px; margin: 0 auto; padding: 40px 48px; box-shadow: 0 2px 20px rgba(0,0,0,0.1); border-radius: 8px; transition: background 0.3s, color 0.3s; }
+      body.dark .page { background: #16213e; box-shadow: 0 2px 20px rgba(0,0,0,0.5); color: #e0e0e0; }
+      .header { text-align: center; border-bottom: 3px solid #52b788; padding-bottom: 20px; margin-bottom: 24px; }
+      .header .icon { font-size: 36px; margin-bottom: 6px; }
+      .header h1 { font-size: 24px; color: #2d6a4f; font-weight: 700; line-height: 1.4; }
+      body.dark .header h1 { color: #74c69d; }
+      .header .sub { font-size: 13px; color: #52b788; margin-top: 6px; }
+      .intro-box { background: #f0faf4; border-left: 4px solid #52b788; border-radius: 6px; padding: 14px 18px; font-size: 13.5px; line-height: 1.8; color: #444; margin-bottom: 24px; }
+      body.dark .intro-box { background: #1b4332; color: #b7e4c7; }
+      .section-title { font-size: 16px; font-weight: 700; color: #2d6a4f; margin: 24px 0 10px 0; padding-bottom: 5px; border-bottom: 1.5px solid #d8f3dc; display: flex; align-items: center; gap: 8px; }
+      body.dark .section-title { color: #74c69d; border-bottom-color: #2d6a4f; }
+      .section-title .num { background: #2d6a4f; color: white; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+      body.dark .section-title .num { background: #52b788; color: #1a1a2e; }
+      table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-top: 8px; }
+      table thead tr { background: #2d6a4f; color: white; }
+      table thead th { padding: 9px 14px; text-align: left; font-weight: 600; }
+      table tbody tr:nth-child(odd) { background: #f0faf4; }
+      table tbody tr:nth-child(even) { background: #ffffff; }
+      body.dark table tbody tr:nth-child(odd) { background: #1b4332; }
+      body.dark table tbody tr:nth-child(even) { background: #16213e; }
+      table tbody td { padding: 9px 14px; color: #444; border-bottom: 1px solid #d8f3dc; }
+      body.dark table tbody td { color: #ccc; border-bottom-color: #2d6a4f; }
+      table tbody td:first-child { font-weight: 600; color: #2d6a4f; text-align: center; width: 80px; }
+      body.dark table tbody td:first-child { color: #74c69d; }
+      .mode-demo { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+      .mode-card { border-radius: 10px; padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+      .mode-card.light-card { background: #f8fdf9; border: 2px solid #b7e4c7; }
+      .mode-card.dark-card { background: #16213e; border: 2px solid #52b788; }
+      .mode-card .mode-icon { font-size: 28px; }
+      .mode-card .mode-title { font-size: 14px; font-weight: 700; }
+      .mode-card.light-card .mode-title { color: #2d6a4f; }
+      .mode-card.dark-card .mode-title { color: #74c69d; }
+      .mode-card .mode-desc { font-size: 12.5px; text-align: center; line-height: 1.6; }
+      .mode-card.light-card .mode-desc { color: #555; }
+      .mode-card.dark-card .mode-desc { color: #aaa; }
+      .mode-card .mode-btn-demo { margin-top: 4px; border-radius: 20px; padding: 5px 14px; font-size: 12px; border: none; cursor: default; display: flex; align-items: center; gap: 5px; }
+      .mode-card.light-card .mode-btn-demo { background: #2d6a4f; color: white; }
+      .mode-card.dark-card .mode-btn-demo { background: #52b788; color: #1a1a2e; }
+      .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 10px; }
+      .feature-card { background: #f0faf4; border: 1px solid #b7e4c7; border-radius: 8px; padding: 16px 14px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; }
+      body.dark .feature-card { background: #1b4332; border-color: #2d6a4f; }
+      .feature-card .f-icon { font-size: 26px; }
+      .feature-card .f-title { font-size: 14px; font-weight: 700; color: #2d6a4f; }
+      body.dark .feature-card .f-title { color: #74c69d; }
+      .feature-card .f-desc { font-size: 12.5px; color: #555; line-height: 1.7; }
+      body.dark .feature-card .f-desc { color: #b7e4c7; }
+      .steps { margin-top: 10px; }
+      .step { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 10px; background: #fafafa; border: 1px solid #e8f5e9; border-radius: 8px; padding: 12px 16px; }
+      body.dark .step { background: #1b2a3b; border-color: #2d6a4f; }
+      .step-num { background: #52b788; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+      body.dark .step-num { background: #2d6a4f; }
+      .step-content .step-title { font-size: 13.5px; font-weight: 700; color: #2d6a4f; margin-bottom: 3px; }
+      body.dark .step-content .step-title { color: #74c69d; }
+      .step-content .step-desc { font-size: 13px; color: #555; line-height: 1.7; }
+      body.dark .step-content .step-desc { color: #aaa; }
+      .step-content .step-example { margin-top: 6px; background: #e9f7ef; border-left: 3px solid #52b788; border-radius: 4px; padding: 7px 12px; font-size: 12.5px; color: #2d6a4f; font-style: italic; line-height: 1.6; }
+      body.dark .step-content .step-example { background: #1b4332; color: #74c69d; border-left-color: #74c69d; }
+      .warn-box { background: #fff3e0; border: 1.5px solid #e76f51; border-radius: 8px; padding: 14px 18px; margin-top: 10px; }
+      body.dark .warn-box { background: #2d1b0e; border-color: #e76f51; }
+      .warn-box .warn-title { font-size: 14px; font-weight: 700; color: #e76f51; margin-bottom: 8px; }
+      .warn-box ul { list-style: none; padding: 0; }
+      .warn-box ul li { font-size: 13px; color: #c0392b; line-height: 1.8; padding-left: 18px; position: relative; }
+      body.dark .warn-box ul li { color: #f4a261; }
+      .warn-box ul li::before { content: "⚠"; position: absolute; left: 0; font-size: 11px; }
+      .tech-box { background: #eaf4fb; border-left: 4px solid #74b9e0; border-radius: 6px; padding: 12px 18px; font-size: 13px; color: #444; line-height: 1.8; margin-top: 10px; }
+      body.dark .tech-box { background: #0f2a3d; color: #90caf9; }
+      .tech-box b { color: #1a6fa0; }
+      body.dark .tech-box b { color: #64b5f6; }
+      .footer { text-align: center; margin-top: 28px; padding-top: 14px; border-top: 1px solid #d8f3dc; font-size: 11.5px; color: #aaa; line-height: 1.8; }
+      body.dark .footer { border-top-color: #2d6a4f; color: #555; }
+      @media print {
+        body { background: white; padding: 0; }
+        .page { box-shadow: none; border-radius: 0; padding: 20px 30px; max-width: 100%; }
+        .toggle-bar { display: none; }
+        .feature-grid { grid-template-columns: repeat(3, 1fr); }
+        .section-title { page-break-after: avoid; }
+        .step, .warn-box, .feature-card { page-break-inside: avoid; }
+      }
+    </style>
+
+</head>
+<body>
+  <div class="toggle-bar">
+    <button class="toggle-btn" onclick="toggleMode()" id="modeBtn">🌙 切換夜間模式</button>
+  </div>
+  <div class="page">
+    <div class="header">
+      <div class="icon">🌸</div>
+      <h1>OpenTCM 中醫婦科痛證平台<br>操作指南</h1>
+      <div class="sub">融合傳統中醫智慧與現代 AI 技術，專注婦科痛證知識咨詢</div>
+    </div>
+    <div class="intro-box">
+      OpenTCM 是一個融合傳統中醫智慧與現代 AI 技術的智能問答平台，基於 <strong>GraphRAG（圖譜檢索增強生成）</strong>技術，提供專業的中醫知識咨詢服務，涵蓋中藥知識、病症分析及養生保健三大範疇。
+    </div>
+    <div class="section-title"><span class="num">一</span>介面語言切換</div>
+    <p style="font-size:13.5px;color:#555;margin-bottom:8px;">網站頂部提供三種語言選項，點擊右上角對應按鈕即可切換：</p>
+    <table>
+      <thead><tr><th>按鈕</th><th>語言</th></tr></thead>
+      <tbody>
+        <tr><td>简</td><td>簡體中文</td></tr>
+        <tr><td>繁</td><td>繁體中文</td></tr>
+        <tr><td>EN</td><td>英文</td></tr>
+      </tbody>
+    </table>
+    <div class="section-title"><span class="num">二</span>日間 / 夜間模式切換</div>
+    <p style="font-size:13.5px;color:#555;margin-bottom:12px;">網站右上角提供<strong>日夜模式切換按鈕</strong>，點擊即可切換介面顯示模式：</p>
+    <div class="mode-demo">
+      <div class="mode-card light-card">
+        <div class="mode-icon">🌙</div>
+        <div class="mode-title">日間模式（預設）</div>
+        <div class="mode-desc">白色背景，綠色主調<br>適合日間光線充足環境使用</div>
+        <div class="mode-btn-demo">🌙 切換夜間模式</div>
+      </div>
+      <div class="mode-card dark-card">
+        <div class="mode-icon">🌕</div>
+        <div class="mode-title">夜間模式</div>
+        <div class="mode-desc" style="color:#90caf9;">深藍色背景，低亮度設計<br>適合夜間或低光環境，保護眼睛</div>
+        <div class="mode-btn-demo">🌕 切換日間模式</div>
+      </div>
+    </div>
+    <div class="section-title"><span class="num">三</span>三大核心功能模塊</div>
+    <div class="feature-grid">
+      <div class="feature-card"><div class="f-icon">🌿</div><div class="f-title">中藥知識</div><div class="f-desc">查詢婦科相關中藥材的性味、功效及用藥注意事項</div></div>
+      <div class="feature-card"><div class="f-icon">🏥</div><div class="f-title">病症分析</div><div class="f-desc">針對婦科痛證進行中醫辨證分析，並提供對應治療方向</div></div>
+      <div class="feature-card"><div class="f-icon">⚖️</div><div class="f-title">養生保健</div><div class="f-desc">提供婦科體質調理、經期養生及日常保健建議</div></div>
+    </div>
+    <div class="section-title"><span class="num">四</span>開始使用步驟</div>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-title">進入問答介面</div><div class="step-desc">點擊首頁中央的「<strong>開始咨詢 →</strong>」按鈕，進入智能問答對話頁面。</div></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-title">選擇語言及顯示模式</div><div class="step-desc">點擊右上角語言按鈕選擇語言（<strong>简</strong> 簡體中文 ／ <strong>繁</strong> 繁體中文 ／ <strong>EN</strong> 英文），並可按 🌙／🌕 按鈕切換日間或夜間模式。</div></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-title">輸入婦科痛證問題</div><div class="step-desc">在對話框中輸入婦科痛證相關問題。</div><div class="step-example">💬 例：「痛經屬於寒凝血瘀型，有什麼中藥方劑可以調理？」<br>💬 例：「子宮內膜異位症在中醫如何辨證論治？」<br>💬 例：「氣滯血瘀型痛經經期飲食應注意什麼？」</div></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-title">提交問題</div><div class="step-desc">輸入完畢後，按下 <strong>Enter 鍵</strong>或點擊發送按鈕提交問題。</div></div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-title">查看 AI 回答</div><div class="step-desc">系統將基於中醫知識圖譜，針對婦科痛證生成專業的辨證分析及治療建議。</div></div></div>
+      <div class="step"><div class="step-num">6</div><div class="step-content"><div class="step-title">深入追問</div><div class="step-desc">可繼續追問藥材劑量、穴位按摩、飲食禁忌等細節，進行多輪對話。</div><div class="step-example">💬 例：「少腹逐瘀湯的組成及適應症是什麼？」<br>💬 例：「緩解痛經可以按壓哪些穴位？如何操作？」</div></div></div>
+    </div>
+    <div class="section-title"><span class="num">五</span>重要注意事項</div>
+    <div class="warn-box">
+      <div class="warn-title">⚠️ 溫馨提示 / 免責聲明</div>
+      <ul>
+        <li>本系統提供中醫知識參考，<strong>不能替代專業醫療建議</strong></li>
+        <li>婦科痛證情況複雜，如症狀嚴重請及時咨詢<strong>持牌中西醫專業醫生</strong></li>
+        <li>所有回答僅供參考，請勿自行診斷或用藥</li>
+        <li>孕婦使用活血化瘀類中藥前，<strong>必須先諮詢醫生</strong></li>
+      </ul>
+    </div>
+    <div class="section-title"><span class="num">六</span>技術背景</div>
+    <div class="tech-box">
+      OpenTCM 採用先進的 <b>GraphRAG（圖譜檢索增強生成）</b> 技術，結合大型語言模型（LLM），能夠精準檢索中醫藥知識圖譜、針對婦科痛證提供有依據的辨證分析，並理解複雜的中醫術語與概念，為婦科臨床提供智能輔助參考。
+    </div>
+    <div class="footer">
+      本指南根據 OpenTCM 網站內容整理，專為中醫婦科痛證平台用戶而設<br>
+      如網站功能有更新，請以實際頁面為準 · © 2026 OpenTCM 婦科痛證平台操作指南
+    </div>
+  </div>
+  
+    <script>
+      function toggleMode() {
+        const body = document.body;
+        const btn = document.getElementById('modeBtn');
+        body.classList.toggle('dark');
+        btn.textContent = body.classList.contains('dark') ? '🌕 切換日間模式' : '🌙 切換夜間模式';
+      }
+    </script>
+
+</body>
+</html>

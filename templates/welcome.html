@@ -1,144 +1,131 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="{{ 'en' if lang == 'en' else ('zh-Hant' if lang == 'zh-Hant' else 'zh-CN') }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OpenTCM</title>
-    <meta name="description" content="OpenTCM 中医智能问答助手，为您提供专业的中医知识咨询服务">
-    <meta name="keywords" content="中医,TCM,中医问答,智能助手,中医知识">
+    <meta name="description" content="OpenTCM GraphRAG 中医古籍智能问答助手">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/OpenTCM_favicon.png') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260702-welcome-cropped-logo">
 </head>
-<body>
-    <!-- 站点顶栏 -->
+<body data-page="welcome" data-initial-lang="{{ lang }}">
     <div class="site-top-bar">
-        <img src="{{ url_for('static', filename='images/OpenTCM_site_logo.png') }}" 
-             alt="OpenTCM Logo" 
-             class="site-top-logo">
+        <img src="{{ url_for('static', filename='images/OpenTCM_site_logo.png') }}" alt="OpenTCM Logo" class="site-top-logo">
         <span class="site-top-name">OpenTCM</span>
+        <div class="site-top-spacer"></div>
+        <div class="language-switch" aria-label="Language">
+            <button type="button" class="lang-btn" data-lang="zh-Hans">简</button>
+            <button type="button" class="lang-btn" data-lang="zh-Hant">繁</button>
+            <button type="button" class="lang-btn" data-lang="en">EN</button>
+        </div>
+        <a class="logout-link" data-i18n="logout" href="{{ url_for('logout', lang=lang) }}">退出</a>
     </div>
 
-    <!-- 欢迎页面主体 -->
-    <div class="welcome-page-container">
-        <div class="homepage-content">
+    <main class="welcome-page-container">
+        <section class="homepage-content opentcm-panel">
             <div class="logo-container">
-                <img src="{{ url_for('static', filename='images/OpenTCM.png') }}" 
-                     alt="OpenTCM 中医智能问答助手" 
-                     class="welcome-logo">
+                <img src="{{ url_for('static', filename='images/opentcm_logo_cropped_20260702.png') }}" alt="OpenTCM" class="welcome-logo">
             </div>
-            
-            <!-- 欢迎信息 -->
+
             <div class="welcome-info">
-                <h1 style="color: rgba(255,255,255,0.95); font-size: 2.2em; font-weight: 700; margin-bottom: 20px; text-shadow: 0 4px 8px rgba(0,0,0,0.2);">
-                    中医智能问答助手
-                </h1>
-                <p style="color: rgba(255,255,255,0.85); font-size: 1.15em; line-height: 1.8; margin-bottom: 40px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                    融合传统中医智慧与现代AI技术<br>
-                    为您提供专业、准确的中医知识咨询服务
+                <h1 data-i18n="title">中医智能问答助手</h1>
+                <p data-i18n="subtitle">
+                    融合传统中医智慧与现代AI技术，为您提供专业、准确的中医知识咨询服务。
                 </p>
             </div>
-            
-            <!-- 特色功能展示 -->
-            <div class="features-preview" style="display: flex; justify-content: center; gap: 30px; margin-bottom: 50px; flex-wrap: wrap;">
-                <div class="feature-item" style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius: 16px; padding: 20px; width: 140px; text-align: center; border: 1px solid rgba(255,255,255,0.2);">
-                    <div style="font-size: 2.5em; margin-bottom: 10px;">🌿</div>
-                    <div style="color: rgba(255,255,255,0.9); font-size: 0.9em; font-weight: 500;">中药知识</div>
+
+            <div class="features-preview opentcm-feature-row">
+                <div class="feature-item">
+                    <div class="feature-icon">🌿</div>
+                    <div data-i18n="featureGraph">中药知识</div>
                 </div>
-                <div class="feature-item" style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius: 16px; padding: 20px; width: 140px; text-align: center; border: 1px solid rgba(255,255,255,0.2);">
-                    <div style="font-size: 2.5em; margin-bottom: 10px;">🏥</div>
-                    <div style="color: rgba(255,255,255,0.9); font-size: 0.9em; font-weight: 500;">疾病诊治</div>
+                <div class="feature-item">
+                    <div class="feature-icon">🏥</div>
+                    <div data-i18n="featureSource">病症分析</div>
                 </div>
-                <div class="feature-item" style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius: 16px; padding: 20px; width: 140px; text-align: center; border: 1px solid rgba(255,255,255,0.2);">
-                    <div style="font-size: 2.5em; margin-bottom: 10px;">⚖️</div>
-                    <div style="color: rgba(255,255,255,0.9); font-size: 0.9em; font-weight: 500;">养生保健</div>
+                <div class="feature-item">
+                    <div class="feature-icon">⚖️</div>
+                    <div data-i18n="featureReason">养生保健</div>
                 </div>
             </div>
-            
-            <!-- 开始聊天按钮 -->
-            <button onclick="location.href='{{ url_for('chat_ui_page') }}'" 
-                    class="chat-now-button"
-                    aria-label="开始与OpenTCM智能助手对话">
+
+            <button onclick="location.href='{{ url_for('chat_ui_page', lang=lang) }}'" class="chat-now-button" data-i18n="start">
                 开始咨询 →
             </button>
-            
-            <!-- 温馨提示 -->
-            <div class="welcome-tip" style="margin-top: 40px; padding: 20px; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 16px; border: 1px solid rgba(255,255,255,0.2);">
-                <p style="color: rgba(255,255,255,0.8); font-size: 0.9em; line-height: 1.6; margin: 0;">
-                    💡 <strong>温馨提示：</strong>本系统提供中医知识参考，不能替代专业医疗建议。<br>
-                    如有健康问题，请及时咨询专业医生。
+
+            <nav class="guide-links" aria-label="Guides">
+                <a id="legalLink" href="{{ url_for('guide', guide_type='legal', lang=lang) }}" target="_blank" rel="noopener" data-i18n="legal">免责声明</a>
+                <a id="guideLink" href="{{ url_for('guide', guide_type='user', lang=lang) }}" target="_blank" rel="noopener" data-i18n="guide">操作指南</a>
+            </nav>
+
+            <div class="welcome-tip">
+                <p data-i18n="tip">
+                    温馨提示：本系统提供中医知识参考，不能替代专业医疗建议。如有健康问题，请及时咨询专业医生。
                 </p>
             </div>
-        </div>
-    </div>
+        </section>
+    </main>
 
-    <!-- 页脚 -->
     <footer class="welcome-footer">
-        <p style="font-weight: 500;">&copy; 2024-2025 OpenTCM. All rights reserved.</p>
-        <p style="opacity: 0.8;">Disclaimer: OpenTCM provides TCM knowledge. Consult a healthcare provider for medical advice.</p>
+        <p>&copy; 2024-2026 OpenTCM. All rights reserved.</p>
     </footer>
 
-    <!-- 添加一些交互动画脚本 -->
     <script>
-        // 页面加载动画
-        document.addEventListener('DOMContentLoaded', function() {
-            const features = document.querySelectorAll('.feature-item');
-            features.forEach((feature, index) => {
-                feature.style.opacity = '0';
-                feature.style.transform = 'translateY(20px)';
-                feature.style.transition = 'all 0.6s ease';
-                
-                setTimeout(() => {
-                    feature.style.opacity = '1';
-                    feature.style.transform = 'translateY(0)';
-                }, 300 + index * 150);
-            });
-
-            // 为特色功能添加悬停效果
-            features.forEach(feature => {
-                feature.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateY(-5px) scale(1.05)';
-                    this.style.boxShadow = '0 10px 25px rgba(0,0,0,0.2)';
-                });
-                
-                feature.addEventListener('mouseleave', function() {
-                    this.style.transform = 'translateY(0) scale(1)';
-                    this.style.boxShadow = 'none';
-                });
-            });
-        });
-
-        // 按钮点击动画
-        document.querySelector('.chat-now-button').addEventListener('click', function(e) {
-            const button = e.target;
-            const ripple = document.createElement('span');
-            
-            ripple.style.position = 'absolute';
-            ripple.style.borderRadius = '50%';
-            ripple.style.background = 'rgba(255,255,255,0.6)';
-            ripple.style.transform = 'scale(0)';
-            ripple.style.animation = 'ripple 0.6s linear';
-            ripple.style.left = '50%';
-            ripple.style.top = '50%';
-            ripple.style.width = '100px';
-            ripple.style.height = '100px';
-            ripple.style.marginLeft = '-50px';
-            ripple.style.marginTop = '-50px';
-            
-            button.appendChild(ripple);
-            
-            setTimeout(() => {
-                ripple.remove();
-            }, 600);
-        });
-    </script>
-
-    <style>
-        @keyframes ripple {
-            to {
-                transform: scale(2);
-                opacity: 0;
+        const i18n = {
+            "zh-Hans": {
+                logout: "退出",
+                title: "中医智能问答助手",
+                subtitle: "融合传统中医智慧与现代AI技术，为您提供专业、准确的中医知识咨询服务。",
+                featureGraph: "中药知识",
+                featureSource: "病症分析",
+                featureReason: "养生保健",
+                start: "开始咨询 →",
+                legal: "免责声明",
+                guide: "操作指南",
+                tip: "温馨提示：本系统提供中医知识参考，不能替代专业医疗建议。如有健康问题，请及时咨询专业医生。"
+            },
+            "zh-Hant": {
+                logout: "登出",
+                title: "中醫智能問答助手",
+                subtitle: "融合傳統中醫智慧與現代AI技術，為您提供專業、準確的中醫知識諮詢服務。",
+                featureGraph: "中藥知識",
+                featureSource: "病症分析",
+                featureReason: "養生保健",
+                start: "開始諮詢 →",
+                legal: "免責聲明",
+                guide: "操作指南",
+                tip: "溫馨提示：本系統提供中醫知識參考，不能替代專業醫療建議。如有健康問題，請及時諮詢專業醫生。"
+            },
+            en: {
+                logout: "Log out",
+                title: "Intelligent TCM Q&A Assistant",
+                subtitle: "Integrating traditional TCM wisdom with modern AI technology to provide professional and accurate TCM knowledge consultation.",
+                featureGraph: "Herbal knowledge",
+                featureSource: "Symptom Analysis",
+                featureReason: "Health preservation",
+                start: "Start Chat →",
+                legal: "Disclaimer",
+                guide: "User Guide",
+                tip: "Friendly reminder: this system provides TCM knowledge for reference and cannot replace professional medical advice. Please consult a qualified clinician for health concerns."
             }
+        };
+
+        function setLang(lang) {
+            localStorage.setItem("opentcm_lang", lang);
+            document.documentElement.lang = lang === "en" ? "en" : (lang === "zh-Hant" ? "zh-Hant" : "zh-CN");
+            document.querySelectorAll("[data-i18n]").forEach(node => {
+                const key = node.getAttribute("data-i18n");
+                if (i18n[lang][key]) node.textContent = i18n[lang][key];
+            });
+            document.querySelectorAll(".lang-btn").forEach(btn => btn.classList.toggle("active", btn.dataset.lang === lang));
+            document.querySelector(".chat-now-button").onclick = () => location.href = `/chat_page?lang=${encodeURIComponent(lang)}`;
+            document.querySelector(".logout-link").href = `/logout?lang=${encodeURIComponent(lang)}`;
+            document.getElementById("legalLink").href = `/guide/legal?lang=${encodeURIComponent(lang)}`;
+            document.getElementById("guideLink").href = `/guide/user?lang=${encodeURIComponent(lang)}`;
         }
-    </style>
+
+        document.querySelectorAll(".lang-btn").forEach(btn => btn.addEventListener("click", () => setLang(btn.dataset.lang)));
+        setLang(localStorage.getItem("opentcm_lang") || document.body.dataset.initialLang || "zh-Hans");
+    </script>
+</body>
+</html>

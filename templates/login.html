@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="{{ 'en' if lang == 'en' else ('zh-Hant' if lang == 'zh-Hant' else 'zh-CN') }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenTCM Login</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/OpenTCM_favicon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260525-mobile-bg">
+</head>
+<body data-page="login" data-initial-lang="{{ lang }}" data-has-error="{{ '1' if error else '0' }}">
+    <div class="site-top-bar">
+        <img src="{{ url_for('static', filename='images/OpenTCM_site_logo.png') }}" alt="OpenTCM Logo" class="site-top-logo">
+        <span class="site-top-name">OpenTCM</span>
+        <div class="site-top-spacer"></div>
+        <div class="language-switch" aria-label="Language">
+            <button type="button" class="lang-btn" data-lang="zh-Hans">简</button>
+            <button type="button" class="lang-btn" data-lang="zh-Hant">繁</button>
+            <button type="button" class="lang-btn" data-lang="en">EN</button>
+        </div>
+    </div>
+
+    <main class="auth-page-container">
+        <section class="auth-panel">
+            <img src="{{ url_for('static', filename='images/OpenTCM_site_logo.png') }}" alt="OpenTCM" class="auth-logo">
+            <h1 data-i18n="title">进入 OpenTCM</h1>
+            <p data-i18n="subtitle">请输入专家测试密码后继续。</p>
+            <form method="post" class="auth-form">
+                <input type="hidden" name="lang" id="langInput" value="{{ lang }}">
+                <label for="password" data-i18n="passwordLabel">密码</label>
+                <input id="password" name="password" class="password-input" type="password" autocomplete="current-password" autofocus required>
+                <p id="loginError" class="auth-error" data-i18n="error" hidden>密码不正确，请重试。</p>
+                <button type="submit" class="chat-now-button auth-submit" data-i18n="submit">进入</button>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        const i18n = {
+            "zh-Hans": {
+                title: "进入 OpenTCM",
+                subtitle: "请输入专家测试密码后继续。",
+                passwordLabel: "密码",
+                error: "密码不正确，请重试。",
+                submit: "进入"
+            },
+            "zh-Hant": {
+                title: "進入 OpenTCM",
+                subtitle: "請輸入專家測試密碼後繼續。",
+                passwordLabel: "密碼",
+                error: "密碼不正確，請重試。",
+                submit: "進入"
+            },
+            en: {
+                title: "Enter OpenTCM",
+                subtitle: "Please enter the expert testing password to continue.",
+                passwordLabel: "Password",
+                error: "Incorrect password. Please try again.",
+                submit: "Enter"
+            }
+        };
+
+        function setLang(lang) {
+            localStorage.setItem("opentcm_lang", lang);
+            document.documentElement.lang = lang === "en" ? "en" : (lang === "zh-Hant" ? "zh-Hant" : "zh-CN");
+            document.getElementById("langInput").value = lang;
+            document.querySelectorAll("[data-i18n]").forEach(node => {
+                const key = node.getAttribute("data-i18n");
+                if (i18n[lang][key]) node.textContent = i18n[lang][key];
+            });
+            document.querySelectorAll(".lang-btn").forEach(btn => btn.classList.toggle("active", btn.dataset.lang === lang));
+            const url = new URL(window.location.href);
+            url.searchParams.set("lang", lang);
+            history.replaceState({}, "", url);
+        }
+
+        document.querySelectorAll(".lang-btn").forEach(btn => btn.addEventListener("click", () => setLang(btn.dataset.lang)));
+        setLang(localStorage.getItem("opentcm_lang") || document.body.dataset.initialLang || "zh-Hans");
+        if (document.body.dataset.hasError === "1") {
+            document.getElementById("loginError").hidden = false;
+        }
+    </script>
+</body>
+</html>

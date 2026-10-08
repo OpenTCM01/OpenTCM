@@ -8,9 +8,9 @@ import traceback
 from dotenv import load_dotenv
 load_dotenv()
 
-KIMI_API_KEY = os.getenv("MOONSHOT_API_KEY", "sk-your-kimi-api-key")
+KIMI_API_KEY = os.getenv("MOONSHOT_API_KEY")
 KIMI_BASE_URL = "https://api.moonshot.cn/v1"
-DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "sk-your-deepseek-api-key")
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 DEEPSEEK_BASE_URL = "https://api.deepseek.com"
 
 CURRENT_API_KEY = KIMI_API_KEY

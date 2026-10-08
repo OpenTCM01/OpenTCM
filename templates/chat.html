@@ -1,670 +1,798 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="{{ 'en' if lang == 'en' else ('zh-Hant' if lang == 'zh-Hant' else 'zh-CN') }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat with OpenTCM</title>
-    <meta name="description" content="与OpenTCM中医智能助手对话，获取专业的中医知识解答">
-    <meta name="keywords" content="中医问答,智能对话,TCM,中医咨询">
+    <meta name="description" content="OpenTCM GraphRAG 中医智能问答">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/OpenTCM_favicon.png') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260626-expert-ui">
 </head>
-<body>
+<body data-page="chat" data-initial-lang="{{ lang }}">
     <div class="site-top-bar">
-        <img src="{{ url_for('static', filename='images/OpenTCM_site_logo.png') }}" 
-             alt="OpenTCM Logo" 
-             class="site-top-logo">
+        <button type="button" id="sidebarToggle" class="sidebar-toggle" aria-label="Conversations">☰</button>
+        <img src="{{ url_for('static', filename='images/OpenTCM_site_logo.png') }}" alt="OpenTCM Logo" class="site-top-logo">
         <span class="site-top-name">OpenTCM</span>
+        <div class="site-top-spacer"></div>
+        <div class="language-switch" aria-label="Language">
+            <button type="button" class="lang-btn" data-lang="zh-Hans">简</button>
+            <button type="button" class="lang-btn" data-lang="zh-Hant">繁</button>
+            <button type="button" class="lang-btn" data-lang="en">EN</button>
+        </div>
+        <a class="logout-link" data-i18n="logout" href="{{ url_for('logout', lang=lang) }}">退出</a>
     </div>
 
     <div class="chat-page-wrapper">
+        <div id="sidebarBackdrop" class="sidebar-backdrop" hidden></div>
+        <aside class="conversation-sidebar" id="conversationSidebar" aria-label="Conversations">
+            <div class="sidebar-header">
+                <div>
+                    <div class="sidebar-title" data-i18n="conversations">历史对话</div>
+                    <div class="sidebar-subtitle" data-i18n="conversationHint">可延续先前讨论</div>
+                </div>
+                <button type="button" id="newConversationBtn" class="new-conversation-btn" data-i18n="newChat">新建</button>
+            </div>
+            <div id="conversationList" class="conversation-list"></div>
+        </aside>
         <div class="chat-page-container">
             <header class="chat-page-header">
-                <a href="{{ url_for('welcome') }}" 
-                   class="chat-back-link"
-                   aria-label="返回首页"
-                   title="返回首页">
-                    &#x2190;
-                </a>
-                <h1>OpenTCM 中医智能助手</h1>
-                
-                <div class="status-indicator" style="position: absolute; right: 24px; display: flex; align-items: center; gap: 8px;">
-                    <div class="status-dot" style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: pulse 2s infinite;"></div>
-                    <span style="color: rgba(255,255,255,0.9); font-size: 0.85em;">在线</span>
+                <a id="backLink" href="{{ url_for('welcome', lang=lang) }}" class="chat-back-link" aria-label="Back" title="Back">&#x2190;</a>
+                <h1 data-i18n="title">OpenTCM 中医智能问答助手</h1>
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span data-i18n="online">在线</span>
                 </div>
             </header>
+            <div class="chat-mode-row">
+                <div class="answer-mode-switch" aria-label="Answer mode">
+                    <button type="button" class="mode-btn active" data-mode="fast" data-i18n="fastMode">标准回答</button>
+                    <button type="button" class="mode-btn" data-mode="deep" data-i18n="deepMode">深度思考</button>
+                </div>
+            </div>
 
             <div class="chat-static-welcome" id="chatStaticWelcome">
-                <div style="display: flex; align-items: flex-start; gap: 12px;">
-                    <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.9em; flex-shrink: 0;">
-                        中
-                    </div>
-                    <div style="flex: 1;">
-                        <div style="font-weight: 600; color: #2d3748; margin-bottom: 8px;">
-                            🌿 欢迎使用OpenTCM中医智能助手
-                        </div>
-                        <div style="line-height: 1.7;">
-                            您好！我是您的专属中医知识顾问，可以为您解答：
-                            <br><br>
-                            <span style="display: inline-block; margin: 4px 8px 4px 0; padding: 4px 12px; background: rgba(102, 126, 234, 0.1); border-radius: 20px; font-size: 0.9em; color: #4c63d2;">🌱 中药材功效</span>
-                            <span style="display: inline-block; margin: 4px 8px 4px 0; padding: 4px 12px; background: rgba(102, 126, 234, 0.1); border-radius: 20px; font-size: 0.9em; color: #4c63d2;">🏥 疾病调理</span>
-                            <span style="display: inline-block; margin: 4px 8px 4px 0; padding: 4px 12px; background: rgba(102, 126, 234, 0.1); border-radius: 20px; font-size: 0.9em; color: #4c63d2;">⚖️ 养生保健</span>
-                            <span style="display: inline-block; margin: 4px 8px 4px 0; padding: 4px 12px; background: rgba(102, 126, 234, 0.1); border-radius: 20px; font-size: 0.9em; color: #4c63d2;">🍵 食疗方案</span>
-                            <br><br>
-                            请随时向我提问，我会尽力为您提供专业、准确的中医知识解答！
+                <div class="welcome-message-row">
+                    <div class="assistant-avatar">中</div>
+                    <div>
+                        <div class="welcome-message-title" data-i18n="welcomeTitle">欢迎使用 OpenTCM</div>
+                        <div class="welcome-message-body" data-i18n="welcomeBody">
+                            您可以询问中药、方剂、症状、证候、病症分析思路等问题。系统会同步检索古籍知识图谱与现代文献，并用可点击标注显示来源。
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="chat-messages" id="chatMessages">
-                </div>
-
-            <div class="typing-indicator" id="typingIndicator">
-                </div>
+            <div class="chat-messages" id="chatMessages"></div>
 
             <div class="chat-input-area">
-                <div style="flex: 1; position: relative;">
-                    <textarea id="userInput" 
-                              placeholder="请输入您的中医相关问题..."
-                              rows="1"
-                              aria-label="输入您的问题"
-                              style="width: 100%; padding-right: 50px;"></textarea>
-                    
-                    <div class="quick-questions" id="quickQuestions" style="position: absolute; bottom: 100%; left: 0; right: 0; background: white; border-radius: 16px; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); padding: 16px; margin-bottom: 8px; display: none; border: 1px solid rgba(102, 126, 234, 0.2);">
-                        <div style="font-size: 0.9em; color: #6b7280; margin-bottom: 12px; font-weight: 500;">💡 您可以这样问我：</div>
-                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                            <button class="quick-question-btn">当归的功效是什么？</button>
-                            <button class="quick-question-btn">感冒了怎么调理？</button>
-                            <button class="quick-question-btn">如何养护脾胃？</button>
-                            <button class="quick-question-btn">月经不调怎么办？</button>
+                <div class="chat-input-shell">
+                    <textarea id="userInput" placeholder="请输入您的中医相关问题..." rows="1" aria-label="Question"></textarea>
+                    <div class="quick-questions" id="quickQuestions">
+                        <div class="quick-title" data-i18n="quickTitle">您可以这样问：</div>
+                        <div class="quick-list">
+                            <button class="quick-question-btn" data-q-zh="当归的功效和可治疗疾病有哪些？" data-q-hant="當歸的功效和可治療疾病有哪些？" data-q-en="What are the effects of Danggui and what conditions may it treat?">当归的功效和可治疗疾病有哪些？</button>
+                            <button class="quick-question-btn" data-q-zh="月经不调如何辨证和治疗？" data-q-hant="月經不調如何辨證和治療？" data-q-en="How can irregular menstruation be differentiated and treated in TCM?">月经不调如何辨证和治疗？</button>
+                            <button class="quick-question-btn" data-q-zh="失眠可能对应哪些证候和治法？" data-q-hant="失眠可能對應哪些證候和治法？" data-q-en="Which patterns and treatment methods may insomnia correspond to?">失眠可能对应哪些证候和治法？</button>
+                            <button class="quick-question-btn" data-q-zh="易黄汤" data-q-hant="易黃湯" data-q-en="Yihuang Tang">易黄汤</button>
+                            <button class="quick-question-btn" data-q-zh="如何调理气血不足？" data-q-hant="如何調理氣血不足？" data-q-en="How can qi and blood deficiency be regulated?">如何调理气血不足？</button>
+                        </div>
+                        <div class="quick-title template-title" data-i18n="templateTitle">问题模板：</div>
+                        <div class="quick-list template-list">
+                            <button class="quick-question-btn template-btn" data-label-zh="病症分析" data-label-hant="病症分析" data-label-en="Symptom analysis" data-q-zh="请分析【疾病/症状】的中医证候、治法、常用方剂和现代研究证据。" data-q-hant="請分析【疾病/症狀】的中醫證候、治法、常用方劑和現代研究證據。" data-q-en="Please analyze the TCM patterns, treatment principles, common formulas, and modern evidence for [disease/symptom].">病症分析</button>
+                            <button class="quick-question-btn template-btn" data-label-zh="中药功效" data-label-hant="中藥功效" data-label-en="Herb effects" data-q-zh="请分析【中药】的功效、归经、可治疗病症、配伍和禁忌。" data-q-hant="請分析【中藥】的功效、歸經、可治療病症、配伍和禁忌。" data-q-en="Please analyze the effects, meridians, treatable conditions, combinations, and cautions for [herb].">中药功效</button>
+                            <button class="quick-question-btn template-btn" data-label-zh="方剂分析" data-label-hant="方劑分析" data-label-en="Formula analysis" data-q-zh="请分析【方剂】的组成、功效、主治证候、古籍依据和现代研究。" data-q-hant="請分析【方劑】的組成、功效、主治證候、古籍依據和現代研究。" data-q-en="Please analyze the composition, effects, indicated patterns, classical evidence, and modern research for [formula].">方剂分析</button>
+                            <button class="quick-question-btn template-btn" data-label-zh="现代研究进展" data-label-hant="現代研究進展" data-label-en="Research progress" data-q-zh="请总结【疾病/主题】的现代临床研究进展、干预措施和结局指标。" data-q-hant="請總結【疾病/主題】的現代臨床研究進展、干預措施和結局指標。" data-q-en="Please summarize modern clinical research progress, interventions, and outcomes for [disease/topic].">现代研究进展</button>
+                            <button class="quick-question-btn template-btn" data-label-zh="中西医对比" data-label-hant="中西醫對比" data-label-en="TCM-Western comparison" data-q-zh="请对比【疾病】的现代医学认识与中医病机、证候和治疗思路。" data-q-hant="請對比【疾病】的現代醫學認識與中醫病機、證候和治療思路。" data-q-en="Please compare modern medical understanding with TCM pathogenesis, patterns, and treatment logic for [disease].">中西医对比</button>
+                            <button class="quick-question-btn template-btn" data-label-zh="教学/研究综述" data-label-hant="教學/研究綜述" data-label-en="Teaching/review" data-q-zh="请为【主题】整理教学/研究综述提纲，包括古籍证据、现代文献和待验证问题。" data-q-hant="請為【主題】整理教學/研究綜述提綱，包括古籍證據、現代文獻和待驗證問題。" data-q-en="Please prepare a teaching/research review outline for [topic], including classical evidence, modern literature, and questions for validation.">教学/研究综述</button>
                         </div>
                     </div>
-                    
-                    <button type="button" 
-                            id="quickQuestionsToggle"
-                            style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #667eea; font-size: 1.2em; cursor: pointer; padding: 8px; border-radius: 50%; transition: all 0.3s ease;"
-                            title="查看建议问题"
-                            aria-label="查看快捷问题">
-                        💡
-                    </button>
+                    <button type="button" id="quickQuestionsToggle" title="Suggestions" aria-label="Suggestions">?</button>
                 </div>
-                
-                <button id="sendButton" 
-                        aria-label="发送消息"
-                        title="发送消息 (Enter)">
-                    <span id="sendButtonText">发送</span>
-                    <span id="sendButtonIcon" style="margin-left: 8px;">→</span>
+                <button id="sendButton" aria-label="Send" title="Send">
+                    <span id="sendButtonText" data-i18n="send">发送</span>
+                    <span id="sendButtonIcon">→</span>
                 </button>
             </div>
         </div>
     </div>
 
+    <div id="sourcePopover" class="source-popover" hidden></div>
+
     <footer class="chat-footer">
-        <p style="font-weight: 500;">&copy; 2024-2025 OpenTCM. All rights reserved.</p>
-        <p style="opacity: 0.8;">Disclaimer: OpenTCM provides TCM knowledge. Consult a healthcare provider for medical advice.</p>
+        <p>&copy; 2024-2026 OpenTCM. All rights reserved.</p>
     </footer>
 
     <script>
-        const chatStaticWelcome = document.getElementById('chatStaticWelcome');
-        const chatMessagesContainer = document.getElementById('chatMessages');
-        const userInput = document.getElementById('userInput');
-        const sendButton = document.getElementById('sendButton');
-        const quickQuestions = document.getElementById('quickQuestions');
-        const quickQuestionsToggle = document.getElementById('quickQuestionsToggle');
+        const i18n = {
+            "zh-Hans": {
+                logout: "退出",
+                conversations: "历史对话",
+                conversationHint: "可延续先前讨论",
+                newChat: "新建",
+                noConversations: "暂无历史对话",
+                deleteConversation: "删除",
+                title: "OpenTCM 中医智能问答助手",
+                online: "在线",
+                welcomeTitle: "欢迎使用 OpenTCM",
+                welcomeBody: "您可以询问中药、方剂、症状、证候、病症分析思路等问题。系统会同步检索古籍知识图谱与现代文献，并用可点击标注显示来源。",
+                quickTitle: "您可以这样问：",
+                templateTitle: "问题模板：",
+                send: "发送",
+                thinking: "深度思考",
+                fastMode: "标准回答",
+                deepMode: "深度思考",
+                standardPending: "即将生成快速回答",
+                finalTitle: "中医智能助手回答",
+                errorPrefix: "抱歉，处理时发生错误：",
+                networkError: "网络连接中断或服务器错误，请稍后重试。",
+                sourceTitle: "出处",
+                modernSource: "现代文献",
+                authors: "作者",
+                journal: "期刊",
+                year: "发表时间",
+                condition: "病种",
+                category: "类别",
+                keywords: "关键词",
+                abstract: "摘要",
+                conclusion: "结论",
+                evaluation: "评估数据",
+                ocrOmitted: "原始PDF/OCR文本质量较差，暂不展示该段原文。",
+                entities: "实体",
+                triples: "三元组",
+                original: "原文"
+            },
+            "zh-Hant": {
+                logout: "登出",
+                conversations: "歷史對話",
+                conversationHint: "可延續先前討論",
+                newChat: "新建",
+                noConversations: "暫無歷史對話",
+                deleteConversation: "刪除",
+                title: "OpenTCM 中醫智能問答助手",
+                online: "在線",
+                welcomeTitle: "歡迎使用 OpenTCM",
+                welcomeBody: "您可以詢問中藥、方劑、症狀、證候、病症分析思路等問題。系統會同步檢索古籍知識圖譜與現代文獻，並用可點擊標註顯示來源。",
+                quickTitle: "您可以這樣問：",
+                templateTitle: "問題模板：",
+                send: "發送",
+                thinking: "深度思考",
+                fastMode: "標準回答",
+                deepMode: "深度思考",
+                standardPending: "即將生成快速回答",
+                finalTitle: "中醫智能助手回答",
+                errorPrefix: "抱歉，處理時發生錯誤：",
+                networkError: "網絡連接中斷或服務器錯誤，請稍後重試。",
+                sourceTitle: "出處",
+                modernSource: "現代文獻",
+                authors: "作者",
+                journal: "期刊",
+                year: "發表時間",
+                condition: "病種",
+                category: "類別",
+                keywords: "關鍵詞",
+                abstract: "摘要",
+                conclusion: "結論",
+                evaluation: "評估資料",
+                ocrOmitted: "原始PDF/OCR文字品質較差，暫不展示該段原文。",
+                entities: "實體",
+                triples: "三元組",
+                original: "原文"
+            },
+            en: {
+                logout: "Log out",
+                conversations: "Chats",
+                conversationHint: "Continue prior discussion",
+                newChat: "New",
+                noConversations: "No conversations yet",
+                deleteConversation: "Delete",
+                title: "OpenTCM TCM Q&A Assistant",
+                online: "Online",
+                welcomeTitle: "Welcome to OpenTCM",
+                welcomeBody: "Ask about herbs, formulas, symptoms, patterns, or symptom-analysis reasoning. OpenTCM retrieves both the classical knowledge graph and modern literature, then displays clickable citations.",
+                quickTitle: "Try asking:",
+                templateTitle: "Templates:",
+                send: "Send",
+                thinking: "Deep Reasoning",
+                fastMode: "Standard",
+                deepMode: "Deep Reasoning",
+                standardPending: "Preparing a standard answer",
+                finalTitle: "TCM AI Assistant Answer",
+                errorPrefix: "Sorry, an error occurred: ",
+                networkError: "Network connection interrupted or server error. Please try again later.",
+                sourceTitle: "Source",
+                modernSource: "Modern literature",
+                authors: "Authors",
+                journal: "Journal",
+                year: "Publication year",
+                condition: "Condition",
+                category: "Category",
+                keywords: "Keywords",
+                abstract: "Abstract",
+                conclusion: "Conclusion",
+                evaluation: "Evaluation data",
+                ocrOmitted: "The source PDF/OCR text quality is poor, so this passage is not displayed.",
+                entities: "Entities",
+                triples: "Triples",
+                original: "Original passage"
+            }
+        };
 
-        let eventSource = null; 
+        const chatStaticWelcome = document.getElementById("chatStaticWelcome");
+        const sidebarToggle = document.getElementById("sidebarToggle");
+        const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+        const conversationSidebar = document.getElementById("conversationSidebar");
+        const conversationList = document.getElementById("conversationList");
+        const newConversationBtn = document.getElementById("newConversationBtn");
+        const chatMessagesContainer = document.getElementById("chatMessages");
+        const userInput = document.getElementById("userInput");
+        const sendButton = document.getElementById("sendButton");
+        const sendButtonText = document.getElementById("sendButtonText");
+        const sendButtonIcon = document.getElementById("sendButtonIcon");
+        const modeButtons = document.querySelectorAll(".mode-btn");
+        const quickQuestions = document.getElementById("quickQuestions");
+        const quickQuestionsToggle = document.getElementById("quickQuestionsToggle");
+        const sourcePopover = document.getElementById("sourcePopover");
 
-     
-        function simpleMarkdownToHtml(text) {
-            let html = text.replace(/\n/g, '<br>');
-            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        let currentLang = localStorage.getItem("opentcm_lang") || document.body.dataset.initialLang || "zh-Hans";
+        let currentMode = localStorage.getItem("opentcm_answer_mode") || "fast";
+        let currentConversationId = localStorage.getItem("opentcm_conversation_id") || "";
+        let eventSource = null;
+        let sourceMap = {};
+
+        function escapeHtml(text) {
+            return String(text ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function renderInlineMarkdown(text) {
+            let html = escapeHtml(text);
+            html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+            html = html.replace(/\*(.*?)\*/g, "<em>$1</em>");
+            html = html.replace(/[\[［]([sSmM])(\d+)[\]］]/g, (match, prefix, id) => {
+                const sourceId = `${prefix.toUpperCase()}${id}`;
+                return `<button type="button" class="citation-chip" data-source-id="${sourceId}">[${sourceId}]</button>`;
+            });
             return html;
         }
 
+        function simpleMarkdownToHtml(text) {
+            const sectionNames = /^(核心结论|核心結論|古籍知识图谱证据|古籍知識圖譜證據|现代文献证据|現代文獻證據|英文研究证据|英文研究證據|中医辨证与方药分析|中醫辨證與方藥分析|现代检查\/药理与中西医对照|現代檢查\/藥理與中西醫對照|临床安全提醒|臨床安全提醒|严重风险提醒|嚴重風險提醒|可继续追问的问题|可繼續追問的問題|Core Conclusions?|Classical KG Evidence|Modern Literature Evidence|English Research Evidence|TCM Pattern and Formula Analysis|Modern Tests\/Pharmacology and TCM-Western Comparison|Clinical Safety Note|Serious-risk Reminder|Follow-up Questions?)[:：]?$/i;
+            const lines = String(text ?? "").split(/\r?\n/);
+            const rendered = [];
+            let listOpen = false;
+
+            const closeList = () => {
+                if (listOpen) {
+                    rendered.push("</ul>");
+                    listOpen = false;
+                }
+            };
+
+            lines.forEach(line => {
+                const trimmed = line.trim();
+                if (!trimmed) {
+                    closeList();
+                    rendered.push('<div class="answer-spacer"></div>');
+                    return;
+                }
+                const markdownHeading = trimmed.match(/^#{1,4}\s+(.+)$/);
+                if (markdownHeading || sectionNames.test(trimmed.replace(/\*\*/g, ""))) {
+                    closeList();
+                    const heading = markdownHeading ? markdownHeading[1] : trimmed.replace(/\*\*/g, "").replace(/[:：]$/, "");
+                    rendered.push(`<div class="answer-section-heading">${renderInlineMarkdown(heading)}</div>`);
+                    return;
+                }
+                const bullet = trimmed.match(/^[-*]\s+(.+)$/);
+                const numbered = trimmed.match(/^(\d+)[.、]\s+(.+)$/);
+                if (bullet || numbered) {
+                    if (!listOpen) {
+                        rendered.push('<ul class="answer-list">');
+                        listOpen = true;
+                    }
+                    const content = bullet ? bullet[1] : numbered[2];
+                    rendered.push(`<li>${renderInlineMarkdown(content)}</li>`);
+                    return;
+                }
+                closeList();
+                rendered.push(`<p class="answer-paragraph">${renderInlineMarkdown(line)}</p>`);
+            });
+            closeList();
+            return rendered.join("");
+        }
+
+        function setLang(lang) {
+            currentLang = lang;
+            localStorage.setItem("opentcm_lang", lang);
+            document.documentElement.lang = lang === "en" ? "en" : (lang === "zh-Hant" ? "zh-Hant" : "zh-CN");
+            document.querySelectorAll("[data-i18n]").forEach(node => {
+                const key = node.getAttribute("data-i18n");
+                if (i18n[lang][key]) node.textContent = i18n[lang][key];
+            });
+            document.querySelectorAll(".lang-btn").forEach(btn => btn.classList.toggle("active", btn.dataset.lang === lang));
+            modeButtons.forEach(btn => btn.classList.toggle("active", btn.dataset.mode === currentMode));
+            document.querySelector(".logout-link").href = `/logout?lang=${encodeURIComponent(lang)}`;
+            document.getElementById("backLink").href = `/?lang=${encodeURIComponent(lang)}`;
+            userInput.placeholder = lang === "en" ? "Enter your TCM question..." : (lang === "zh-Hant" ? "請輸入您的中醫相關問題..." : "请输入您的中医相关问题...");
+            document.querySelectorAll(".quick-question-btn").forEach(btn => {
+                if (btn.classList.contains("template-btn")) {
+                    btn.textContent = lang === "en" ? btn.dataset.labelEn : (lang === "zh-Hant" ? btn.dataset.labelHant : btn.dataset.labelZh);
+                } else {
+                    btn.textContent = lang === "en" ? btn.dataset.qEn : (lang === "zh-Hant" ? btn.dataset.qHant : btn.dataset.qZh);
+                }
+            });
+            renderConversationList(window.__opentcmConversations || []);
+        }
+
+        async function fetchJson(url, options = {}) {
+            const response = await fetch(url, {
+                credentials: "same-origin",
+                headers: { "Content-Type": "application/json" },
+                ...options
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return response.json();
+        }
+
+        function setCurrentConversation(id) {
+            currentConversationId = id || "";
+            if (currentConversationId) {
+                localStorage.setItem("opentcm_conversation_id", currentConversationId);
+            } else {
+                localStorage.removeItem("opentcm_conversation_id");
+            }
+        }
+
+        function renderConversationList(conversations) {
+            window.__opentcmConversations = conversations || [];
+            conversationList.innerHTML = "";
+            if (!conversations || !conversations.length) {
+                const empty = document.createElement("div");
+                empty.className = "conversation-empty";
+                empty.textContent = i18n[currentLang].noConversations;
+                conversationList.appendChild(empty);
+                return;
+            }
+            conversations.forEach(item => {
+                const row = document.createElement("button");
+                row.type = "button";
+                row.className = `conversation-item${item.id === currentConversationId ? " active" : ""}`;
+                row.innerHTML = `
+                    <span class="conversation-title">${escapeHtml(item.title || i18n[currentLang].newChat)}</span>
+                    <span class="conversation-meta">${escapeHtml((item.updated_at || "").replace("T", " ").slice(0, 16))}</span>
+                    <span class="conversation-delete" role="button" title="${escapeHtml(i18n[currentLang].deleteConversation)}" data-delete-id="${escapeHtml(item.id)}">×</span>
+                `;
+                row.addEventListener("click", event => {
+                    const deleteTarget = event.target.closest("[data-delete-id]");
+                    if (deleteTarget) {
+                        event.stopPropagation();
+                        deleteConversation(deleteTarget.dataset.deleteId);
+                        return;
+                    }
+                    loadConversation(item.id);
+                });
+                conversationList.appendChild(row);
+            });
+        }
+
+        async function loadConversations() {
+            try {
+                const data = await fetchJson("/api/conversations");
+                renderConversationList(data.conversations || []);
+            } catch (error) {
+                console.error("Failed to load conversations", error);
+            }
+        }
+
+        function clearChat() {
+            chatMessagesContainer.innerHTML = "";
+            sourceMap = {};
+            if (chatStaticWelcome) chatStaticWelcome.style.display = "";
+        }
+
+        function renderHistoricalMessage(message) {
+            if (message.role === "user") {
+                appendUserMessage(message.content || "");
+                return;
+            }
+            const wrapper = createAssistantMessageWrapper();
+            const final = createFinalAnswerContainer(wrapper, i18n[currentLang].finalTitle);
+            final.classList.add("streaming-complete");
+            final.innerHTML = simpleMarkdownToHtml(message.content || "");
+            if (message.sources && message.sources.length) {
+                const existing = Object.values(sourceMap).filter(item => item && item.id);
+                updateSources(existing.concat(message.sources));
+            }
+            const followups = message.metadata && message.metadata.followups;
+            if (Array.isArray(followups) && followups.length) {
+                renderFollowups(wrapper, followups);
+            }
+        }
+
+        async function loadConversation(id) {
+            try {
+                const data = await fetchJson(`/api/conversations/${encodeURIComponent(id)}`);
+                setCurrentConversation(id);
+                clearChat();
+                (data.messages || []).forEach(renderHistoricalMessage);
+                if ((data.messages || []).length && chatStaticWelcome) chatStaticWelcome.style.display = "none";
+                renderConversationList(window.__opentcmConversations || []);
+                closeSidebar();
+                scrollToBottom();
+            } catch (error) {
+                console.error("Failed to load conversation", error);
+                setCurrentConversation("");
+            }
+        }
+
+        async function createConversation() {
+            try {
+                const data = await fetchJson(`/api/conversations?lang=${encodeURIComponent(currentLang)}`, {
+                    method: "POST",
+                    body: JSON.stringify({})
+                });
+                setCurrentConversation(data.conversation.id);
+                clearChat();
+                await loadConversations();
+                closeSidebar();
+                userInput.focus();
+            } catch (error) {
+                console.error("Failed to create conversation", error);
+            }
+        }
+
+        async function deleteConversation(id) {
+            try {
+                await fetchJson(`/api/conversations/${encodeURIComponent(id)}`, { method: "DELETE" });
+                if (id === currentConversationId) {
+                    setCurrentConversation("");
+                    clearChat();
+                }
+                await loadConversations();
+            } catch (error) {
+                console.error("Failed to delete conversation", error);
+            }
+        }
+
+        function openSidebar() {
+            conversationSidebar.classList.add("open");
+            sidebarBackdrop.hidden = false;
+        }
+
+        function closeSidebar() {
+            conversationSidebar.classList.remove("open");
+            sidebarBackdrop.hidden = true;
+        }
 
         function appendUserMessage(text) {
-            const messageDiv = document.createElement('div');
-            messageDiv.classList.add('message', 'user-message');
-            
-            const messageContentDiv = document.createElement('div');
-            messageContentDiv.classList.add('message-content');
-            messageContentDiv.textContent = text;
-            
-            messageDiv.appendChild(messageContentDiv);
+            const messageDiv = document.createElement("div");
+            messageDiv.className = "message user-message";
+            const content = document.createElement("div");
+            content.className = "message-content";
+            content.textContent = text;
+            messageDiv.appendChild(content);
             chatMessagesContainer.appendChild(messageDiv);
             scrollToBottom();
         }
 
-    
         function scrollToBottom() {
-            setTimeout(() => {
-                chatMessagesContainer.scrollTo({ top: chatMessagesContainer.scrollHeight, behavior: 'smooth' });
-            }, 100);
+            setTimeout(() => chatMessagesContainer.scrollTo({ top: chatMessagesContainer.scrollHeight, behavior: "smooth" }), 60);
         }
 
-   
-        function scrollThinkingToBottom(thinkingContainer) {
-            if (thinkingContainer) {
-                setTimeout(() => {
-                    thinkingContainer.scrollTo({ 
-                        top: thinkingContainer.scrollHeight, 
-                        behavior: 'smooth' 
-                    });
-                }, 50);
-            }
-        }
-
-     
         function updateSendButton(isSending) {
             userInput.disabled = isSending;
             sendButton.disabled = isSending;
+            modeButtons.forEach(btn => btn.disabled = isSending);
             if (isSending) {
-                sendButton.style.background = 'linear-gradient(135deg, #9ca3af, #6b7280)';
-                sendButton.querySelector('#sendButtonText').textContent = '思考中';
-                sendButton.querySelector('#sendButtonIcon').innerHTML = `<div class="typing-dots" style="transform: scale(0.6); margin: 0 auto;"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+                sendButtonText.textContent = currentMode === "deep" ? i18n[currentLang].deepMode : i18n[currentLang].fastMode;
+                sendButtonIcon.innerHTML = `<div class="typing-dots compact"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
             } else {
-                sendButton.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                sendButton.querySelector('#sendButtonText').textContent = '发送';
-                sendButton.querySelector('#sendButtonIcon').textContent = '→';
+                sendButtonText.textContent = i18n[currentLang].send;
+                sendButtonIcon.textContent = "→";
             }
         }
 
-     
-        function handleStepByStepStreaming(query) {
-        
-            if (chatStaticWelcome) {
-                chatStaticWelcome.style.display = 'none';
-            }
-            
+        function createAssistantMessageWrapper() {
+            const messageDiv = document.createElement("div");
+            messageDiv.className = "message assistant-message";
+            const avatar = document.createElement("div");
+            avatar.className = "assistant-avatar";
+            avatar.textContent = currentLang === "en" ? "AI" : "中";
+            const content = document.createElement("div");
+            content.className = "assistant-content-wrapper";
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(content);
+            chatMessagesContainer.appendChild(messageDiv);
+            return content;
+        }
+
+        function createThinkingContainer(wrapper, title) {
+            const box = document.createElement("div");
+            box.className = "thinking-container";
+            box.innerHTML = `
+                <div class="thinking-header">
+                    <div class="thinking-title"><span class="thinking-icon">KG</span><span>${escapeHtml(title || i18n[currentLang].thinking)}</span></div>
+                    <button type="button" class="thinking-toggle" aria-label="Toggle">▲</button>
+                </div>
+                <div class="thinking-content"></div>
+            `;
+            box.querySelector(".thinking-toggle").addEventListener("click", () => toggleThinking(box));
+            wrapper.appendChild(box);
+            return box.querySelector(".thinking-content");
+        }
+
+        function createStandardStatus(wrapper, content) {
+            const box = document.createElement("div");
+            box.className = "standard-status";
+            box.innerHTML = `
+                <span class="standard-status-spinner" aria-hidden="true"></span>
+                <span>${escapeHtml(content || i18n[currentLang].standardPending)}</span>
+            `;
+            wrapper.appendChild(box);
+            return box;
+        }
+
+        function createFinalAnswerContainer(wrapper, title) {
+            const box = document.createElement("div");
+            box.className = "final-answer-container";
+            box.innerHTML = `
+                <div class="final-answer-header"><span class="final-answer-icon">AI</span><span>${escapeHtml(title || i18n[currentLang].finalTitle)}</span></div>
+                <div class="final-answer-content"></div>
+            `;
+            wrapper.appendChild(box);
+            return box.querySelector(".final-answer-content");
+        }
+
+        function renderFollowups(wrapper, questions) {
+            if (!questions || !questions.length) return;
+            const box = document.createElement("div");
+            box.className = "followup-suggestions";
+            box.innerHTML = questions.slice(0, 5).map(question =>
+                `<button type="button" class="followup-btn">${escapeHtml(question)}</button>`
+            ).join("");
+            wrapper.appendChild(box);
+        }
+
+        function toggleThinking(box) {
+            const content = box.querySelector(".thinking-content");
+            const button = box.querySelector(".thinking-toggle");
+            const closed = content.style.display === "none";
+            content.style.display = closed ? "block" : "none";
+            button.textContent = closed ? "▲" : "▼";
+            box.classList.toggle("collapsed", !closed);
+        }
+
+        function updateSources(sources) {
+            sourceMap = {};
+            (sources || []).forEach(source => {
+                sourceMap[source.id] = source;
+                sourceMap[String(source.id || "").toLowerCase()] = source;
+                sourceMap[String(source.id || "").toUpperCase()] = source;
+            });
+        }
+
+        function showSourcePopover(sourceId, anchor) {
+            const source = sourceMap[sourceId] || sourceMap[String(sourceId || "").toUpperCase()] || sourceMap[String(sourceId || "").toLowerCase()];
+            if (!source) return;
+            const entityText = (source.entities || []).slice(0, 10).map(e => `${escapeHtml(e.text)}(${escapeHtml(e.type || "")})`).join("、");
+            const tripleText = (source.triplets || []).slice(0, 8).map(t =>
+                `<li>${escapeHtml(t.head_text)} --${escapeHtml(t.relation)}--> ${escapeHtml(t.tail_text)}</li>`
+            ).join("");
+            const isModern = source.source_type === "modern";
+            const evaluationText = (source.evaluation_data || []).slice(0, 5).map(item =>
+                `<li>${escapeHtml(item.evidence || item.value || "")}</li>`
+            ).join("");
+            const modernMeta = isModern ? `
+                <div class="source-book">${escapeHtml(i18n[currentLang].modernSource)}：${escapeHtml(source.title || source.book_title || "")}</div>
+                <div class="source-path">${escapeHtml(source.relative_path || "")}</div>
+                ${(source.authors || []).length ? `<div class="source-section"><strong>${escapeHtml(i18n[currentLang].authors)}:</strong> ${escapeHtml((source.authors || []).join("、"))}</div>` : ""}
+                ${source.journal || source.publication_year ? `<div class="source-section"><strong>${escapeHtml(i18n[currentLang].journal)}:</strong> ${escapeHtml(source.journal || "")} ${source.publication_year ? `｜${escapeHtml(i18n[currentLang].year)}: ${escapeHtml(source.publication_year)}` : ""}</div>` : ""}
+                ${source.source_condition || source.treatment_category ? `<div class="source-section"><strong>${escapeHtml(i18n[currentLang].condition)}:</strong> ${escapeHtml(source.source_condition || "")} ${source.treatment_category ? `｜${escapeHtml(i18n[currentLang].category)}: ${escapeHtml(source.treatment_category)}` : ""}</div>` : ""}
+                ${(source.keywords || []).length ? `<div class="source-section"><strong>${escapeHtml(i18n[currentLang].keywords)}:</strong> ${escapeHtml((source.keywords || []).join("、"))}</div>` : ""}
+                ${source.abstract ? `<div class="source-section"><strong>${escapeHtml(i18n[currentLang].abstract)}:</strong><p>${escapeHtml(source.abstract)}</p></div>` : ""}
+                ${source.abstract_omitted ? `<div class="source-section"><strong>${escapeHtml(i18n[currentLang].abstract)}:</strong><p>${escapeHtml(i18n[currentLang].ocrOmitted)}</p></div>` : ""}
+                ${source.conclusion ? `<div class="source-section"><strong>${escapeHtml(i18n[currentLang].conclusion)}:</strong><p>${escapeHtml(source.conclusion)}</p></div>` : ""}
+                ${source.conclusion_omitted ? `<div class="source-section"><strong>${escapeHtml(i18n[currentLang].conclusion)}:</strong><p>${escapeHtml(i18n[currentLang].ocrOmitted)}</p></div>` : ""}
+                ${evaluationText ? `<div class="source-section"><strong>${escapeHtml(i18n[currentLang].evaluation)}:</strong><ul>${evaluationText}</ul></div>` : ""}
+            ` : "";
+            const classicalMeta = !isModern ? `
+                <div class="source-book">《${escapeHtml(source.book_title)}》</div>
+                <div class="source-path">${escapeHtml(source.relative_path)}</div>
+                <div class="source-section"><strong>${escapeHtml(i18n[currentLang].original)}:</strong><p>${escapeHtml(source.text)}</p></div>
+            ` : "";
+            sourcePopover.innerHTML = `
+                <div class="source-popover-header">
+                    <strong>${escapeHtml(i18n[currentLang].sourceTitle)} ${escapeHtml(source.id)}</strong>
+                    <button type="button" class="source-close" aria-label="Close">×</button>
+                </div>
+                ${modernMeta}
+                ${classicalMeta}
+                ${entityText ? `<div class="source-section"><strong>${escapeHtml(i18n[currentLang].entities)}:</strong> ${entityText}</div>` : ""}
+                ${tripleText ? `<div class="source-section"><strong>${escapeHtml(i18n[currentLang].triples)}:</strong><ul>${tripleText}</ul></div>` : ""}
+            `;
+            sourcePopover.hidden = false;
+            const rect = anchor.getBoundingClientRect();
+            const top = Math.min(window.innerHeight - 24, rect.bottom + 8);
+            const popoverWidth = Math.min(sourcePopover.offsetWidth || 380, window.innerWidth - 24);
+            const left = Math.max(12, Math.min(window.innerWidth - popoverWidth - 12, rect.left));
+            sourcePopover.style.top = `${top + window.scrollY}px`;
+            sourcePopover.style.left = `${left + window.scrollX}px`;
+            sourcePopover.querySelector(".source-close").addEventListener("click", () => sourcePopover.hidden = true);
+        }
+
+        function handleStreaming(query) {
+            if (chatStaticWelcome) chatStaticWelcome.style.display = "none";
             appendUserMessage(query);
             updateSendButton(true);
+            sourcePopover.hidden = true;
 
-           
             let thinkingContainer = null;
+            let standardStatus = null;
+            let currentThinkingStep = null;
+            let currentThinkingStepRaw = "";
             let finalAnswerContainer = null;
-            let assistantMessageWrapper;
-            let currentThinkingStepContainer = null;
-            let thinkingContentWrapper = null; 
+            let finalAnswerRaw = "";
+            const wrapper = createAssistantMessageWrapper();
 
-           
-            function createAssistantMessageWrapper() {
-                const messageDiv = document.createElement('div');
-                messageDiv.classList.add('message', 'assistant-message');
-                
-                const avatarDiv = document.createElement('div');
-                avatarDiv.style.cssText = `width: 32px; height: 32px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.8em; margin-right: 12px; flex-shrink: 0; margin-top: 4px;`;
-                avatarDiv.textContent = '中';
-                messageDiv.appendChild(avatarDiv);
-
-                const contentWrapper = document.createElement('div');
-                contentWrapper.style.width = '100%';
-                messageDiv.appendChild(contentWrapper);
-
-                chatMessagesContainer.appendChild(messageDiv);
-                return contentWrapper;
-            }
-
-    
-            function createThinkingContainer() {
-                const thinkingBox = document.createElement('div');
-                thinkingBox.className = 'thinking-container';
-                
-                const thinkingHeader = document.createElement('div');
-                thinkingHeader.className = 'thinking-header';
-                thinkingHeader.innerHTML = `
-                    <div class="thinking-title">
-                        <span class="thinking-icon">🤔</span>
-                        <span>思考过程</span>
-                    </div>
-                    <div class="thinking-toggle" onclick="toggleThinking(this)">
-                        <span class="toggle-icon">▲</span>
-                    </div>
-                `;
-                
-                const thinkingContent = document.createElement('div');
-                thinkingContent.className = 'thinking-content';
-                
-                thinkingBox.appendChild(thinkingHeader);
-                thinkingBox.appendChild(thinkingContent);
-                
-                assistantMessageWrapper.appendChild(thinkingBox);
-                
-               
-                thinkingContentWrapper = thinkingContent;
-                
-                return thinkingContent;
-            }
-
-          
-            function createFinalAnswerContainer() {
-                const finalAnswerBox = document.createElement('div');
-                finalAnswerBox.className = 'final-answer-container';
-                
-                const finalAnswerHeader = document.createElement('div');
-                finalAnswerHeader.className = 'final-answer-header';
-                finalAnswerHeader.innerHTML = `
-                    <span class="final-answer-icon">💡</span>
-                    <span>综合分析结果</span>
-                `;
-                
-                const finalAnswerContent = document.createElement('div');
-                finalAnswerContent.className = 'final-answer-content';
-                
-                finalAnswerBox.appendChild(finalAnswerHeader);
-                finalAnswerBox.appendChild(finalAnswerContent);
-                
-                assistantMessageWrapper.appendChild(finalAnswerBox);
-                return finalAnswerContent;
-            }
-
-            assistantMessageWrapper = createAssistantMessageWrapper();
-            
-            eventSource = new EventSource(`/api/chat?query=${encodeURIComponent(query)}`);
-
+            const conversationParam = currentConversationId ? `&conversation_id=${encodeURIComponent(currentConversationId)}` : "";
+            eventSource = new EventSource(`/api/chat?query=${encodeURIComponent(query)}&lang=${encodeURIComponent(currentLang)}&mode=${encodeURIComponent(currentMode)}${conversationParam}`);
             eventSource.onmessage = function(event) {
                 try {
                     const data = JSON.parse(event.data);
-
                     switch (data.type) {
-                        case 'thinking_start':
-                            if (!thinkingContainer) {
-                                thinkingContainer = createThinkingContainer();
+                        case "conversation":
+                            setCurrentConversation(data.conversation_id);
+                            loadConversations();
+                            break;
+                        case "thinking_start":
+                            thinkingContainer = createThinkingContainer(wrapper, data.title);
+                            break;
+                        case "standard_status":
+                            if (!standardStatus) {
+                                standardStatus = createStandardStatus(wrapper, data.content);
                             }
                             break;
-
-                        case 'thinking_step':
-                            if (thinkingContainer) {
-                                const stepDiv = document.createElement('div');
-                                stepDiv.className = 'thinking-step';
-                                stepDiv.innerHTML = `
-                                    <div class="thinking-step-title">
-                                        <span class="step-number">${data.step}</span>
-                                        <span class="step-title-text">${data.title}</span>
-                                    </div>
-                                    <div class="thinking-step-content"></div>
-                                `;
-                                thinkingContainer.appendChild(stepDiv);
-                                currentThinkingStepContainer = stepDiv.querySelector('.thinking-step-content');
-                                
-                                
-                                scrollThinkingToBottom(thinkingContentWrapper);
+                        case "thinking_step": {
+                            const step = document.createElement("div");
+                            step.className = "thinking-step";
+                            step.innerHTML = `
+                                <div class="thinking-step-title">
+                                    <span class="step-number">${data.step}</span>
+                                    <span class="step-title-text">${escapeHtml(data.title)}</span>
+                                </div>
+                                <div class="thinking-step-content"></div>
+                            `;
+                            thinkingContainer.appendChild(step);
+                            currentThinkingStep = step.querySelector(".thinking-step-content");
+                            currentThinkingStepRaw = "";
+                            break;
+                        }
+                        case "thinking_content":
+                            if (currentThinkingStep) {
+                                currentThinkingStepRaw += data.content;
+                                currentThinkingStep.innerHTML = simpleMarkdownToHtml(currentThinkingStepRaw);
                             }
                             break;
-
-                        case 'thinking_content':
-                            if (currentThinkingStepContainer) {
-                                currentThinkingStepContainer.innerHTML += simpleMarkdownToHtml(data.content);
-                                
-                                
-                                scrollThinkingToBottom(thinkingContentWrapper);
-                            }
+                        case "sources":
+                            updateSources(data.sources);
                             break;
-
-                        case 'thinking_end':
-                            
-                            if (thinkingContainer) {
-                                thinkingContainer.classList.add('thinking-complete');
-                                
-                           
-                                scrollThinkingToBottom(thinkingContentWrapper);
-                            }
+                        case "thinking_end":
+                            if (thinkingContainer) thinkingContainer.closest(".thinking-container").classList.add("thinking-complete");
                             break;
-
-                        case 'final_answer_start':
-                            if (!finalAnswerContainer) {
-                                finalAnswerContainer = createFinalAnswerContainer();
+                        case "final_answer_start":
+                            if (standardStatus) {
+                                standardStatus.remove();
+                                standardStatus = null;
                             }
+                            finalAnswerContainer = createFinalAnswerContainer(wrapper, data.title);
                             break;
-
-                        case 'final_answer_content':
+                        case "final_answer_content":
                             if (finalAnswerContainer) {
-                                finalAnswerContainer.classList.add('streaming-final-answer');
-                                finalAnswerContainer.innerHTML += simpleMarkdownToHtml(data.content);
+                                finalAnswerContainer.classList.add("streaming-final-answer");
+                                finalAnswerRaw += data.content;
+                                finalAnswerContainer.innerHTML = simpleMarkdownToHtml(finalAnswerRaw);
                             }
                             break;
-                            
-                        case 'final_end':
-                            
+                        case "followups":
+                            renderFollowups(wrapper, data.questions || []);
+                            break;
+                        case "final_end":
                             if (finalAnswerContainer) {
-                                finalAnswerContainer.classList.remove('streaming-final-answer');
-                                finalAnswerContainer.classList.add('streaming-complete');
+                                finalAnswerContainer.classList.remove("streaming-final-answer");
+                                finalAnswerContainer.classList.add("streaming-complete");
                             }
                             updateSendButton(false);
                             eventSource.close();
+                            loadConversations();
                             userInput.focus();
                             break;
-
-                        case 'error':
-                           
-                            const errorContainer = document.createElement('div');
-                            errorContainer.className = 'message-content error-message';
-                            errorContainer.textContent = `⚠️ 抱歉，处理时发生错误：${data.content}`;
-                            assistantMessageWrapper.appendChild(errorContainer);
+                        case "error": {
+                            const error = document.createElement("div");
+                            error.className = "message-content error-message";
+                            error.textContent = i18n[currentLang].errorPrefix + data.content;
+                            wrapper.appendChild(error);
                             updateSendButton(false);
                             eventSource.close();
                             break;
+                        }
                     }
                     scrollToBottom();
-                } catch(e) {
-                    console.error("解析SSE数据失败:", e);
+                } catch (error) {
+                    console.error("Failed to parse SSE data", error);
                 }
             };
-
-            eventSource.onerror = function(err) {
-                console.error("EventSource 失败:", err);
-                const errorContainer = document.createElement('div');
-                errorContainer.className = 'message-content error-message';
-                errorContainer.textContent = `⚠️ 网络连接中断或服务器错误，请稍后重试。`;
-                assistantMessageWrapper.appendChild(errorContainer);
+            eventSource.onerror = function() {
+                const error = document.createElement("div");
+                error.className = "message-content error-message";
+                error.textContent = i18n[currentLang].networkError;
+                wrapper.appendChild(error);
                 updateSendButton(false);
-                eventSource.close();
+                if (eventSource) eventSource.close();
             };
         }
-        
-   
+
         function sendMessage() {
             const query = userInput.value.trim();
             if (!query || sendButton.disabled) return;
-
-            quickQuestions.style.display = 'none';
-            userInput.value = '';
-            userInput.style.height = 'auto'; 
-
-           
-            if (eventSource) {
-                eventSource.close();
-            }
-
-            handleStepByStepStreaming(query);
+            quickQuestions.style.display = "none";
+            userInput.value = "";
+            userInput.style.height = "auto";
+            if (eventSource) eventSource.close();
+            handleStreaming(query);
         }
 
-        
-        function toggleThinking(toggleButton) {
-            const thinkingContainer = toggleButton.closest('.thinking-container');
-            const thinkingContent = thinkingContainer.querySelector('.thinking-content');
-            const toggleIcon = toggleButton.querySelector('.toggle-icon');
-            
-            if (thinkingContent.style.display === 'none') {
-                thinkingContent.style.display = 'block';
-                toggleIcon.textContent = '▲';
-                thinkingContainer.classList.remove('collapsed');
- 
-                setTimeout(() => scrollThinkingToBottom(thinkingContent), 100);
-            } else {
-                thinkingContent.style.display = 'none';
-                toggleIcon.textContent = '▼';
-                thinkingContainer.classList.add('collapsed');
-            }
-        }
-
-
-        window.toggleThinking = toggleThinking;
-
-
-        userInput.addEventListener('input', function () {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
+        document.querySelectorAll(".lang-btn").forEach(btn => btn.addEventListener("click", () => setLang(btn.dataset.lang)));
+        sidebarToggle.addEventListener("click", openSidebar);
+        sidebarBackdrop.addEventListener("click", closeSidebar);
+        newConversationBtn.addEventListener("click", createConversation);
+        modeButtons.forEach(btn => btn.addEventListener("click", () => {
+            currentMode = btn.dataset.mode;
+            localStorage.setItem("opentcm_answer_mode", currentMode);
+            modeButtons.forEach(item => item.classList.toggle("active", item.dataset.mode === currentMode));
+        }));
+        sendButton.addEventListener("click", sendMessage);
+        userInput.addEventListener("input", function() {
+            this.style.height = "auto";
+            this.style.height = `${this.scrollHeight}px`;
         });
-
-        sendButton.addEventListener('click', sendMessage);
-        
-        userInput.addEventListener('keypress', function(event) {
-            if (event.key === 'Enter' && !event.shiftKey) {
+        userInput.addEventListener("keypress", event => {
+            if (event.key === "Enter" && !event.shiftKey) {
                 event.preventDefault();
                 sendMessage();
             }
         });
-
-
-        quickQuestionsToggle.addEventListener('click', function() {
-            const isVisible = quickQuestions.style.display === 'block';
-            quickQuestions.style.display = isVisible ? 'none' : 'block';
-            this.style.background = isVisible ? 'none' : 'rgba(102, 126, 234, 0.1)';
+        quickQuestionsToggle.addEventListener("click", () => {
+            quickQuestions.style.display = quickQuestions.style.display === "block" ? "none" : "block";
         });
-
-        document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('quick-question-btn')) {
-                userInput.value = e.target.textContent;
-                quickQuestions.style.display = 'none';
-                quickQuestionsToggle.style.background = 'none';
-                userInput.focus();
-                sendMessage(); 
-            } else if (!quickQuestions.contains(e.target) && e.target !== quickQuestionsToggle) {
-                quickQuestions.style.display = 'none';
-                quickQuestionsToggle.style.background = 'none';
+        document.addEventListener("click", event => {
+            const citation = event.target.closest(".citation-chip");
+            if (citation) {
+                showSourcePopover(citation.dataset.sourceId, citation);
+                return;
             }
+            if (event.target.classList.contains("quick-question-btn")) {
+                userInput.value = currentLang === "en" ? event.target.dataset.qEn : (currentLang === "zh-Hant" ? event.target.dataset.qHant : event.target.dataset.qZh);
+                quickQuestions.style.display = "none";
+                if (!event.target.classList.contains("template-btn")) sendMessage();
+                return;
+            }
+            if (event.target.classList.contains("followup-btn")) {
+                userInput.value = event.target.textContent;
+                sendMessage();
+                return;
+            }
+            if (!sourcePopover.contains(event.target) && !citation) sourcePopover.hidden = true;
+            if (!quickQuestions.contains(event.target) && event.target !== quickQuestionsToggle) quickQuestions.style.display = "none";
         });
 
+        setLang(currentLang);
+        loadConversations().then(() => {
+            if (currentConversationId) loadConversation(currentConversationId);
+        });
         userInput.focus();
     </script>
-
-    <style>
-
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.2); opacity: 0.7; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-
-        .quick-question-btn {
-            background: rgba(102, 126, 234, 0.1);
-            border: 1px solid rgba(102, 126, 234, 0.2);
-            color: #4c63d2; padding: 8px 16px; border-radius: 20px;
-            font-size: 0.85em; cursor: pointer; transition: all 0.3s ease;
-            white-space: nowrap;
-        }
-        .quick-question-btn:hover {
-            background: rgba(102, 126, 234, 0.2);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
-        }
-        #quickQuestionsToggle:hover {
-            background: rgba(102, 126, 234, 0.1) !important;
-            transform: translateY(-50%) scale(1.1);
-        }
-
-
-        .message {
-            animation: messageSlideIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        @keyframes messageSlideIn {
-            from { opacity: 0; transform: translateY(30px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-
-        .thinking-container {
-            background: rgba(102, 126, 234, 0.05);
-            border: 1px solid rgba(102, 126, 234, 0.15);
-            border-radius: 12px;
-            margin-bottom: 16px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .thinking-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 16px;
-            background: rgba(102, 126, 234, 0.08);
-            border-bottom: 1px solid rgba(102, 126, 234, 0.1);
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .thinking-title {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-            color: #667eea;
-            font-size: 0.9em;
-        }
-
-        .thinking-icon {
-            font-size: 1.1em;
-        }
-
-        .thinking-toggle {
-            background: rgba(102, 126, 234, 0.1);
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .thinking-toggle:hover {
-            background: rgba(102, 126, 234, 0.2);
-            transform: scale(1.1);
-        }
-
-        .toggle-icon {
-            font-size: 0.8em;
-            color: #667eea;
-            font-weight: bold;
-        }
-
-        .thinking-content {
-            padding: 16px;
-            max-height: 300px;
-            overflow-y: auto;
-
-            scroll-behavior: smooth;
-            scrollbar-width: thin;
-        }
-
-        .thinking-container.collapsed .thinking-header {
-            border-bottom: none;
-        }
-
-        .thinking-step {
-            margin-bottom: 12px;
-            padding-bottom: 12px;
-            border-bottom: 1px dashed rgba(102, 126, 234, 0.2);
-        }
-
-        .thinking-step:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-        }
-
-        .thinking-step-title {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #4c63d2;
-        }
-
-        .step-number {
-            background: #667eea;
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.7em;
-            font-weight: bold;
-        }
-
-        .step-title-text {
-            font-size: 0.85em;
-        }
-
-        .thinking-step-content {
-            font-size: 0.85em;
-            line-height: 1.6;
-            color: #4a5568;
-            padding-left: 28px;
-        }
-
-
-        .final-answer-container {
-            background: white;
-            border: 1px solid rgba(102, 126, 234, 0.2);
-            border-radius: 12px;
-            overflow: hidden;
-        }
-
-        .final-answer-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 16px;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-            border-bottom: 1px solid rgba(102, 126, 234, 0.15);
-            font-weight: 600;
-            color: #667eea;
-            font-size: 0.9em;
-        }
-
-        .final-answer-icon {
-            font-size: 1.1em;
-        }
-
-        .final-answer-content {
-            padding: 16px;
-            line-height: 1.7;
-            color: #2d3748;
-        }
-
-        .error-message {
-            color: #e53e3e;
-            background-color: rgba(229, 62, 62, 0.1);
-            border-left: 3px solid #e53e3e;
-            padding: 12px;
-            border-radius: 8px;
-        }
-        
-
-        .streaming-final-answer::after {
-            content: '|';
-            animation: blink 1s infinite;
-            color: #667eea;
-            font-weight: normal;
-        }
-        .streaming-complete::after {
-            display: none;
-        }
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
-        }
-
-
-        .thinking-content::-webkit-scrollbar {
-            width: 6px;
-        }
-        .thinking-content::-webkit-scrollbar-track {
-            background: rgba(102, 126, 234, 0.08);
-            border-radius: 3px;
-        }
-        .thinking-content::-webkit-scrollbar-thumb {
-            background: rgba(102, 126, 234, 0.3);
-            border-radius: 3px;
-            transition: background 0.2s ease;
-        }
-        .thinking-content::-webkit-scrollbar-thumb:hover {
-            background: rgba(102, 126, 234, 0.5);
-        }
-        
-
-        .thinking-content {
-            scrollbar-color: rgba(102, 126, 234, 0.3) rgba(102, 126, 234, 0.08);
-        }
-    </style>
 </body>
 </html>

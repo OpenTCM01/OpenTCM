@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OpenTCM Platform User Guide</title>
+  
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; background: #f5f5f5; color: #333; padding: 20px; transition: background 0.3s, color 0.3s; }
+      body.dark { background: #1a1a2e; color: #e0e0e0; }
+      .toggle-bar { max-width: 800px; margin: 0 auto 12px auto; display: flex; justify-content: flex-end; }
+      .toggle-btn { background: #2d6a4f; color: white; border: none; border-radius: 20px; padding: 7px 18px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: 'Noto Sans TC', sans-serif; transition: background 0.2s; }
+      .toggle-btn:hover { background: #1b4332; }
+      body.dark .toggle-btn { background: #52b788; color: #1a1a2e; }
+      .page { background: white; max-width: 800px; margin: 0 auto; padding: 40px 48px; box-shadow: 0 2px 20px rgba(0,0,0,0.1); border-radius: 8px; transition: background 0.3s, color 0.3s; }
+      body.dark .page { background: #16213e; box-shadow: 0 2px 20px rgba(0,0,0,0.5); color: #e0e0e0; }
+      .header { text-align: center; border-bottom: 3px solid #52b788; padding-bottom: 20px; margin-bottom: 24px; }
+      .header .icon { font-size: 36px; margin-bottom: 6px; }
+      .header h1 { font-size: 24px; color: #2d6a4f; font-weight: 700; line-height: 1.4; }
+      body.dark .header h1 { color: #74c69d; }
+      .header .sub { font-size: 13px; color: #52b788; margin-top: 6px; }
+      .intro-box { background: #f0faf4; border-left: 4px solid #52b788; border-radius: 6px; padding: 14px 18px; font-size: 13.5px; line-height: 1.8; color: #444; margin-bottom: 24px; }
+      body.dark .intro-box { background: #1b4332; color: #b7e4c7; }
+      .section-title { font-size: 16px; font-weight: 700; color: #2d6a4f; margin: 24px 0 10px 0; padding-bottom: 5px; border-bottom: 1.5px solid #d8f3dc; display: flex; align-items: center; gap: 8px; }
+      body.dark .section-title { color: #74c69d; border-bottom-color: #2d6a4f; }
+      .section-title .num { background: #2d6a4f; color: white; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+      body.dark .section-title .num { background: #52b788; color: #1a1a2e; }
+      table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-top: 8px; }
+      table thead tr { background: #2d6a4f; color: white; }
+      table thead th { padding: 9px 14px; text-align: left; font-weight: 600; }
+      table tbody tr:nth-child(odd) { background: #f0faf4; }
+      table tbody tr:nth-child(even) { background: #ffffff; }
+      body.dark table tbody tr:nth-child(odd) { background: #1b4332; }
+      body.dark table tbody tr:nth-child(even) { background: #16213e; }
+      table tbody td { padding: 9px 14px; color: #444; border-bottom: 1px solid #d8f3dc; }
+      body.dark table tbody td { color: #ccc; border-bottom-color: #2d6a4f; }
+      table tbody td:first-child { font-weight: 600; color: #2d6a4f; text-align: center; width: 80px; }
+      body.dark table tbody td:first-child { color: #74c69d; }
+      .mode-demo { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+      .mode-card { border-radius: 10px; padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+      .mode-card.light-card { background: #f8fdf9; border: 2px solid #b7e4c7; }
+      .mode-card.dark-card { background: #16213e; border: 2px solid #52b788; }
+      .mode-card .mode-icon { font-size: 28px; }
+      .mode-card .mode-title { font-size: 14px; font-weight: 700; }
+      .mode-card.light-card .mode-title { color: #2d6a4f; }
+      .mode-card.dark-card .mode-title { color: #74c69d; }
+      .mode-card .mode-desc { font-size: 12.5px; text-align: center; line-height: 1.6; }
+      .mode-card.light-card .mode-desc { color: #555; }
+      .mode-card.dark-card .mode-desc { color: #aaa; }
+      .mode-card .mode-btn-demo { margin-top: 4px; border-radius: 20px; padding: 5px 14px; font-size: 12px; border: none; cursor: default; display: flex; align-items: center; gap: 5px; }
+      .mode-card.light-card .mode-btn-demo { background: #2d6a4f; color: white; }
+      .mode-card.dark-card .mode-btn-demo { background: #52b788; color: #1a1a2e; }
+      .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 10px; }
+      .feature-card { background: #f0faf4; border: 1px solid #b7e4c7; border-radius: 8px; padding: 16px 14px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; }
+      body.dark .feature-card { background: #1b4332; border-color: #2d6a4f; }
+      .feature-card .f-icon { font-size: 26px; }
+      .feature-card .f-title { font-size: 14px; font-weight: 700; color: #2d6a4f; }
+      body.dark .feature-card .f-title { color: #74c69d; }
+      .feature-card .f-desc { font-size: 12.5px; color: #555; line-height: 1.7; }
+      body.dark .feature-card .f-desc { color: #b7e4c7; }
+      .steps { margin-top: 10px; }
+      .step { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 10px; background: #fafafa; border: 1px solid #e8f5e9; border-radius: 8px; padding: 12px 16px; }
+      body.dark .step { background: #1b2a3b; border-color: #2d6a4f; }
+      .step-num { background: #52b788; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+      body.dark .step-num { background: #2d6a4f; }
+      .step-content .step-title { font-size: 13.5px; font-weight: 700; color: #2d6a4f; margin-bottom: 3px; }
+      body.dark .step-content .step-title { color: #74c69d; }
+      .step-content .step-desc { font-size: 13px; color: #555; line-height: 1.7; }
+      body.dark .step-content .step-desc { color: #aaa; }
+      .step-content .step-example { margin-top: 6px; background: #e9f7ef; border-left: 3px solid #52b788; border-radius: 4px; padding: 7px 12px; font-size: 12.5px; color: #2d6a4f; font-style: italic; line-height: 1.6; }
+      body.dark .step-content .step-example { background: #1b4332; color: #74c69d; border-left-color: #74c69d; }
+      .warn-box { background: #fff3e0; border: 1.5px solid #e76f51; border-radius: 8px; padding: 14px 18px; margin-top: 10px; }
+      body.dark .warn-box { background: #2d1b0e; border-color: #e76f51; }
+      .warn-box .warn-title { font-size: 14px; font-weight: 700; color: #e76f51; margin-bottom: 8px; }
+      .warn-box ul { list-style: none; padding: 0; }
+      .warn-box ul li { font-size: 13px; color: #c0392b; line-height: 1.8; padding-left: 18px; position: relative; }
+      body.dark .warn-box ul li { color: #f4a261; }
+      .warn-box ul li::before { content: "⚠"; position: absolute; left: 0; font-size: 11px; }
+      .tech-box { background: #eaf4fb; border-left: 4px solid #74b9e0; border-radius: 6px; padding: 12px 18px; font-size: 13px; color: #444; line-height: 1.8; margin-top: 10px; }
+      body.dark .tech-box { background: #0f2a3d; color: #90caf9; }
+      .tech-box b { color: #1a6fa0; }
+      body.dark .tech-box b { color: #64b5f6; }
+      .footer { text-align: center; margin-top: 28px; padding-top: 14px; border-top: 1px solid #d8f3dc; font-size: 11.5px; color: #aaa; line-height: 1.8; }
+      body.dark .footer { border-top-color: #2d6a4f; color: #555; }
+      @media print {
+        body { background: white; padding: 0; }
+        .page { box-shadow: none; border-radius: 0; padding: 20px 30px; max-width: 100%; }
+        .toggle-bar { display: none; }
+        .feature-grid { grid-template-columns: repeat(3, 1fr); }
+        .section-title { page-break-after: avoid; }
+        .step, .warn-box, .feature-card { page-break-inside: avoid; }
+      }
+    </style>
+
+</head>
+<body>
+  <div class="toggle-bar">
+    <button class="toggle-btn" onclick="toggleMode()" id="modeBtn">🌙 Switch to Night Mode</button>
+  </div>
+  <div class="page">
+    <div class="header">
+      <div class="icon">🌸</div>
+      <h1>OpenTCM TCM Gynecological Pain Platform<br>User Guide</h1>
+      <div class="sub">Integrating Traditional Chinese Medicine Wisdom with Modern AI Technology</div>
+    </div>
+    <div class="intro-box">
+      OpenTCM is an intelligent Q&amp;A platform that integrates traditional Chinese medicine wisdom with modern AI technology. Built on <strong>GraphRAG (Graph Retrieval-Augmented Generation)</strong> technology, it provides professional TCM knowledge consultation services covering three core areas: Herbal Medicine, Symptom Analysis, and Health &amp; Wellness.
+    </div>
+    <div class="section-title"><span class="num">1</span>Language Selection</div>
+    <p style="font-size:13.5px;color:#555;margin-bottom:8px;">Three language options are available at the top of the website. Click the corresponding button in the upper right corner to switch:</p>
+    <table>
+      <thead><tr><th>Button</th><th>Language</th></tr></thead>
+      <tbody>
+        <tr><td>简</td><td>Simplified Chinese</td></tr>
+        <tr><td>繁</td><td>Traditional Chinese</td></tr>
+        <tr><td>EN</td><td>English</td></tr>
+      </tbody>
+    </table>
+    <div class="section-title"><span class="num">2</span>Day / Night Mode Toggle</div>
+    <p style="font-size:13.5px;color:#555;margin-bottom:12px;">A <strong>day/night mode toggle button</strong> is available in the upper right corner. Click to switch the display mode:</p>
+    <div class="mode-demo">
+      <div class="mode-card light-card">
+        <div class="mode-icon">🌙</div>
+        <div class="mode-title">Day Mode (Default)</div>
+        <div class="mode-desc">White background, green theme<br>Ideal for daytime use in well-lit environments</div>
+        <div class="mode-btn-demo">🌙 Switch to Night Mode</div>
+      </div>
+      <div class="mode-card dark-card">
+        <div class="mode-icon">🌕</div>
+        <div class="mode-title">Night Mode</div>
+        <div class="mode-desc" style="color:#90caf9;">Dark blue background, low brightness<br>Ideal for nighttime or low-light use, eye-friendly</div>
+        <div class="mode-btn-demo">🌕 Switch to Day Mode</div>
+      </div>
+    </div>
+    <div class="section-title"><span class="num">3</span>Three Core Feature Modules</div>
+    <div class="feature-grid">
+      <div class="feature-card"><div class="f-icon">🌿</div><div class="f-title">Herbal Medicine</div><div class="f-desc">Look up the properties, effects, and usage notes of gynecology-related herbs</div></div>
+      <div class="feature-card"><div class="f-icon">🏥</div><div class="f-title">Symptom Analysis</div><div class="f-desc">TCM pattern differentiation for gynecological pain with corresponding treatment directions</div></div>
+      <div class="feature-card"><div class="f-icon">⚖️</div><div class="f-title">Health &amp; Wellness</div><div class="f-desc">Guidance on constitution balancing, menstrual care, and daily health maintenance</div></div>
+    </div>
+    <div class="section-title"><span class="num">4</span>Getting Started</div>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-title">Enter the Q&amp;A Interface</div><div class="step-desc">Click the "<strong>Start Consultation →</strong>" button in the center of the homepage to enter the intelligent Q&amp;A chat page.</div></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-title">Select Language &amp; Display Mode</div><div class="step-desc">Click the language button in the upper right to choose (<strong>简</strong> Simplified Chinese ／ <strong>繁</strong> Traditional Chinese ／ <strong>EN</strong> English), and use the 🌙／🌕 button to toggle between day and night mode.</div></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-title">Enter Your Question</div><div class="step-desc">Type your gynecological pain-related question in the chat box.</div><div class="step-example">💬 e.g. "What herbal formulas can help with cold-stagnation blood stasis type dysmenorrhea?"<br>💬 e.g. "How does TCM approach pattern differentiation for endometriosis?"<br>💬 e.g. "What dietary precautions should be taken during menstruation for qi stagnation type pain?"</div></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-title">Submit Your Question</div><div class="step-desc">Press <strong>Enter</strong> or click the send button to submit your question.</div></div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-title">View the AI Response</div><div class="step-desc">The system will generate professional TCM pattern analysis and treatment suggestions based on the knowledge graph.</div></div></div>
+      <div class="step"><div class="step-num">6</div><div class="step-content"><div class="step-title">Ask Follow-up Questions</div><div class="step-desc">Continue asking about dosage, acupressure points, dietary restrictions, and more in a multi-turn conversation.</div><div class="step-example">💬 e.g. "What are the ingredients and indications of Shaofu Zhuyu Tang?"<br>💬 e.g. "Which acupressure points can help relieve menstrual pain? How to apply?"</div></div></div>
+    </div>
+    <div class="section-title"><span class="num">5</span>Important Notes</div>
+    <div class="warn-box">
+      <div class="warn-title">⚠️ Disclaimer</div>
+      <ul>
+        <li>This system provides TCM knowledge for reference only and <strong>cannot replace professional medical advice</strong></li>
+        <li>Gynecological pain conditions are complex — please consult a <strong>licensed TCM or Western medicine practitioner</strong> if symptoms are severe</li>
+        <li>All responses are for reference only; do not self-diagnose or self-medicate</li>
+        <li>Pregnant women must <strong>consult a doctor before using</strong> any blood-activating or stasis-resolving herbs</li>
+      </ul>
+    </div>
+    <div class="section-title"><span class="num">6</span>Technology Background</div>
+    <div class="tech-box">
+      OpenTCM utilises advanced <b>GraphRAG (Graph Retrieval-Augmented Generation)</b> technology combined with a large language model (LLM) to accurately retrieve TCM knowledge graphs, provide evidence-based pattern differentiation for gynecological pain, and interpret complex TCM terminology — serving as an intelligent clinical reference tool.
+    </div>
+    <div class="footer">
+      This guide is compiled based on the OpenTCM website content, designed for users of the TCM Gynecological Pain Platform<br>
+      Please refer to the actual website for the latest features · © 2026 OpenTCM Gynecological Pain Platform User Guide
+    </div>
+  </div>
+  
+    <script>
+      function toggleMode() {
+        const body = document.body;
+        const btn = document.getElementById('modeBtn');
+        body.classList.toggle('dark');
+        btn.textContent = body.classList.contains('dark') ? '🌕 Switch to Day Mode' : '🌙 Switch to Night Mode';
+      }
+    </script>
+
+</body>
+</html>
