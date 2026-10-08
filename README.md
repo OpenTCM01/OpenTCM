@@ -107,18 +107,9 @@ The article discusses AI in TCM and mentions OpenTCM's use of classical-book con
 
 ## 🏗️ How It Works
 
-```mermaid
-flowchart LR
-    Q[Question and recent conversation] --> I[Intent and terminology analysis]
-    I --> C[Classical KG and passage retrieval]
-    I --> M[Modern literature retrieval]
-    C --> E[Ranked sources and graph paths]
-    M --> E
-    E --> A[LLM answer with source IDs]
-    A --> U[Streaming chat and citation popovers]
-    U --> H[(Conversation history)]
-    H --> Q
-```
+![OpenTCM workflow: question and conversation context, intent analysis, classical and modern retrieval, ranked evidence, sourced answers, streaming chat, and conversation history](docs/images/opentcm-workflow.png)
+
+[Editable diagram source](docs/diagrams/opentcm-workflow.mmd)
 
 **Flask** serves the app and streams results with server-sent events. **SQLite FTS5** provides an on-disk full-text search index: it finds relevant indexed terms without repeatedly scanning the entire JSONL corpus. Graph relations support chained retrieval; **DeepSeek** provides query analysis and answer generation through a configurable API endpoint/model.
 
